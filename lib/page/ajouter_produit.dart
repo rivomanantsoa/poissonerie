@@ -133,19 +133,56 @@ print("fermeture de la clavier");
           );
         },
       );
+      final idProduit = globalState.produits.toList();
+final test = globalState.produitsDetails.where((produitDetail)=> produitDetail['id_produit'] ==
+    idProduit.first['id_produit'] && idProduit.first['nom'] == nom && produitDetail['description'] == description).toList();
+      final test2 = globalState.produits.where((produitDetail)=> produitDetail['nom'] == nom).toList();
+print("le tset2 dans notre base de donnees, 65456465464 : $test2");
 
+print("le tsest $test *-*-*-*-*-*-*-*-*-*");
+double sommeStock = globalState.produitsDetails
+          .where((detailProduit) => detailProduit['id_produit'] == idProduit.first['id_produit']
+    && idProduit.first['nom'] == nom && detailProduit['description'] == description)
+          .fold(0, (somme, detailProduit) => somme + detailProduit['stock']);
+double sommeTotalStock = sommeStock + stock;
       try {
-        print("tafiditr ATO VE O");
-        int id =  await globalState.addProduitDetail(prix_unitaire: prix_unitaire,
-          prix_entrer: prixvente, status: statut, stock: stock,
-          date_ajout: date_debut.toIso8601String(),date_fin: date_fin.toIso8601String(),);
+        if(test.isEmpty) {
+          if(test2.isEmpty){
+          print("tafiditr ATO VE O");
+          int id = await globalState.addProduit(
+            nom: nom,
+          );
+          await globalState.addProduitDetail(prix_unitaire: prix_unitaire,
+              prix_entrer: prixvente,
+              status: statut,
+              stock: stock,
+              date_ajout: date_debut.toIso8601String(),
+              date_fin: date_fin.toIso8601String(),
+              description: description,
+              id: id);
+        }else{
+            {
+              await globalState.addProduitDetail(prix_unitaire: prix_unitaire,
+                  prix_entrer: prixvente,
+                  status: statut,
+                  stock: stock,
+                  date_ajout: date_debut.toIso8601String(),
+                  date_fin: date_fin.toIso8601String(),
+                  description: description,
+                  id: test2.first['id_produit']);
+            }
+          }
+        }
+        else{
+          await globalState.updateProduitDetail(prix_unitaire: prix_unitaire,
+              prix_entrer: prixvente,
+              status: statut,
+              stock: sommeTotalStock,
+              date_ajout: date_debut.toIso8601String(),
+              date_fin: date_fin.toIso8601String(),
+              id: test.first['id_produitDetail']);
+        }
 
-        await globalState.addProduit(
-          nom: nom,
-          description: description,
-          stock: stock, id_produitDetail: id,
-
-        );
 
         // ✅ Fermer le loader après succès
         Navigator.pop(context);
@@ -258,13 +295,29 @@ print("fermeture de la clavier");
                         labelStyle: TextStyle(color: Colors.white),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.trim().isEmpty) {
                           return "Hamarino ny anarana";
                         }
+
+                        // Vérifie la présence de caractères spéciaux
+                        final RegExp regex = RegExp(r"^[a-zA-ZÀ-ÿ\s]+$");
+                        if (!regex.hasMatch(value.trim())) {
+                          return "Tsy azo atao ny mampiditra mari-panavahana";
+                        }
+
                         return null;
+                      },
+                      onChanged: (value) {
+                        // Supprime les espaces avant et après en mettant à jour le contrôleur
+                        _nom.text = value.trim();
+                        _nom.selection = TextSelection.fromPosition(
+                          TextPosition(offset: _nom.text.length),
+                        );
                       },
                     ),
                   ),
+
+
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: DropdownButtonFormField<String>(

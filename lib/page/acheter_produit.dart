@@ -137,11 +137,11 @@ bool isChecked = false;
               orElse: () => {} // Si aucun élément n'est trouvé, retourner un Map vide.
           );
 
-          int? id = idF.isNotEmpty ? int.tryParse(idF['id_produit'].toString()) : widget.id;  // S'assurer que 'id_produit' est bien converti en int
+          int? id = idF.isNotEmpty ? int.tryParse(idF['id_produitDetail'].toString()) : widget.id;  // S'assurer que 'id_produit' est bien converti en int
 
 // Vérifier si 'id' est valide avant de l'utiliser
           if (id != null) {
-            await globalState.updateProduitK(id: id, stock: newStock);
+            await globalState.updateProduitDetailsK(id: id, stock:newStock);
           } else {
             print('ID invalide, mise à jour annulée');
           }
@@ -236,7 +236,7 @@ bool isChecked = false;
     final globalState = Provider.of<Controller>(context, listen: false);
 
     // Pour afficher les informations
-    String affichageLanja = widget.items.length > 1 ?  lanja.toStringAsFixed(1) : widget.lanja.toStringAsFixed(3);
+    String affichageLanja = widget.items.length > 1 ?  lanja.toStringAsFixed(1) : widget.lanja.toStringAsFixed(2);
     String affichageVidiny = widget.items.length > 1 ?  vidiny.toString(): widget.prix.toString() ;
 
     return SingleChildScrollView(
@@ -251,7 +251,7 @@ bool isChecked = false;
                 style: TextStyle(color: Colors.white),
               ),
               Text(
-                "Azo vidina $affichageLanja kg",
+                "Azo vidina ${(affichageLanja)} kg",
                 style: TextStyle(color: Colors.green, fontSize: 13),
               ),
               Text(

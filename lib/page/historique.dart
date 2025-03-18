@@ -28,7 +28,7 @@ class _HistoriqueState extends State<Historique> {
 
   final ScrollController _scrollController = ScrollController();
 
-  List<Map<String, dynamic>> _getProduitQuantities(List ventes, List produits) {
+  List<Map<String, dynamic>> _getProduitQuantities(List ventes, List produits, List produitsDetails) {
     Map<int, Map<String, dynamic>> produitQuantites = {};
 
     for (var vente in ventes) {
@@ -37,12 +37,16 @@ class _HistoriqueState extends State<Historique> {
       if (!produitQuantites.containsKey(idProduit)) {
         var produit = produits.firstWhere(
               (p) => p['id_produit'] == idProduit,
+          orElse: () => {'nom': 'Inconnu',},
+        );
+        var produitDetails = produitsDetails.firstWhere(
+              (p) => p['id_produit'] == idProduit,
           orElse: () => {'nom': 'Inconnu', 'description': ''},
         );
 
         produitQuantites[idProduit] = {
           'nom': produit['nom'],
-          'description': produit['description'],
+          'description': produitDetails['description'],
           'quantite': 0.0,
         };
       }
@@ -135,6 +139,10 @@ class _HistoriqueState extends State<Historique> {
                           final nomProduit = globalState.produits.firstWhere(
                                   (produit) =>
                               produit['id_produit'] == vente['id_produit']);
+                          final descriptionProduit = globalState.produitsDetails.firstWhere(
+                                  (produit) =>
+                              produit['id_produit'] == vente['id_produit']);
+
                           final dateT = DateTime.parse(vente['date']);
                           return Card(
                             color: Colors.cyan.shade300, // Bleu très clair
@@ -142,7 +150,7 @@ class _HistoriqueState extends State<Historique> {
                                 horizontal: 10, vertical: 5),
                             child: ListTile(
                               title: Text(
-                                " ${nomProduit['nom']} ${nomProduit['description']} ",
+                                " ${nomProduit['nom']} ${descriptionProduit['description']} ",
                                 style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -174,7 +182,7 @@ class _HistoriqueState extends State<Historique> {
                 child: Row(
                   children: [
                     ..._getProduitQuantities(
-                        globalState.ventes, globalState.produits)
+                        globalState.ventes, globalState.produits, globalState.produitsDetails)
                         .asMap()
                         .entries
                         .map(

@@ -18,11 +18,7 @@ class Controller extends ChangeNotifier {
         await db.execute('''
           CREATE TABLE Produit (
             id_produit INTEGER PRIMARY KEY AUTOINCREMENT,
-            nom TEXT NOT NULL,
-            description TEXT NOT NULL,
-            stockTotal REAL DEFAULT 0,
-            id_produitDetail INTEGER NOT NULL,
-            FOREIGN KEY (id_produitDetail) REFERENCES ProduitDetail (id_produitDetail) ON DELETE CASCADE
+            nom TEXT NOT NULL  
           )
         ''');
         await db.execute('''
@@ -33,7 +29,10 @@ class Controller extends ChangeNotifier {
             statut TEXT NOT NULL,
             stock REAL DEFAULT 0,
             date_ajout TEXT NOT NULL,
-            date_fin TEXT NOT NULL
+            date_fin TEXT NOT NULL,
+            description TEXT NOT NULL,
+            id_produit INTEGER NOT NULL,
+            FOREIGN KEY (id_produit) REFERENCES Produit (id_produit) ON DELETE CASCADE
           )
         ''');
 
@@ -65,22 +64,18 @@ class Controller extends ChangeNotifier {
   // 🔹 CRUD : Produit
 
   // Ajouter un produit
-  Future<void> addProduit({
+  Future<int> addProduit({
     required String nom,
-    required String description,
-    required double stock,
-    required int id_produitDetail,
+
   }) async {
-    await _db.insert('Produit', {
+  int id =  await _db.insert('Produit', {
       'nom': nom,
-      'description': description,
-      'stockTotal': stock,
-      'id_produitDetail': id_produitDetail,
     });
 
     print("ID du produit inséré : ");
     await loadProduits(); // Recharger les produits après l'ajout
     // Retourner l'ID de l'insertion
+    return id;
   }
 
 
@@ -96,17 +91,12 @@ class Controller extends ChangeNotifier {
   Future<void> updateProduit({
     required int id,
     required String nom,
-    required String description,
-    required double stock,
-
   }) async {
     await _db.update(
       'Produit',
       {
         'nom': nom,
-        'description': description,
-        'stockTotal': stock,
-      },
+              },
       where: 'id_produit = ?',
       whereArgs: [id],
     );
@@ -149,19 +139,39 @@ class Controller extends ChangeNotifier {
     required double stock,
     required String date_ajout,
     required String date_fin,
+    required String description,
+    required int id,
   }) async {
-   int id = await _db.insert('ProduitDetail', {
+   int idt = await _db.insert('ProduitDetail', {
       'prix_unitaire' : prix_unitaire,
       'prix_entrer' : prix_entrer,
       'statut' : status,
       'stock': stock,
       'date_ajout' : date_ajout,
       'date_fin' : date_fin,
+     'description' : description,
+     'id_produit' : id,
     });
-    print("dans contrroler les produits sont: $id");
+    print("dans contrroler les produits sont: $idt");
     await loadProduitsDetails();
 return id;
   }
+  Future<void> updateProduitDetailsK({
+    required int id,
+    required double stock,
+
+  }) async {
+    await _db.update(
+      'ProduitDetail',
+      {
+        'stock': stock,
+      },
+      where: 'id_produitDetail = ?',
+      whereArgs: [id],
+    );
+    await loadProduitsDetails();
+  }
+
   Future<void> updateProduitDetail({
     required int id,
     required double prix_unitaire,
@@ -170,6 +180,7 @@ return id;
     required double stock,
     required String date_ajout,
     required String date_fin,
+
   }) async {
     await _db.update('ProduitDetail', {
       'prix_unitaire' : prix_unitaire,
@@ -178,6 +189,7 @@ return id;
       'stock': stock,
       'date_ajout' : date_ajout,
       'date_fin' : date_fin,
+
     },
       where: 'id_produitDetail = ?',
       whereArgs: [id],

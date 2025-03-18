@@ -210,6 +210,10 @@ class _ListTousVenteState extends State<ListTousVente> {
                                         (produit) => produit['id_produit'] == vente['id_produit'],
                                     orElse: () => {},
                                   );
+                                  final nomProduitDetail = globalState.produitsDetails.firstWhere(
+                                        (produit) => produit['id_produitDetail'] == vente['id_produit'],
+                                    orElse: () => {},
+                                  );
                                   return Card(
                                     color: Colors.cyan.shade200,
                                     margin: EdgeInsets.symmetric(vertical: 5),
@@ -234,7 +238,7 @@ class _ListTousVenteState extends State<ListTousVente> {
                                               SizedBox(width: 1),
                                               Expanded(
                                                 child: Text(
-                                                  " (${nomProduit['description'] ?? 'Produit inconnu'})",
+                                                  " (${nomProduitDetail['description'] ?? 'Produit inconnu'})",
                                                   style: TextStyle(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.w400,

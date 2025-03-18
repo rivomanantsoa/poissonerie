@@ -130,10 +130,10 @@ class _AcceuilState extends State<Acceuil> {
                             return GestureDetector(
                               onTap: () {
                                 // Récupérer toutes les variantes de ce produit
-                                List<Map<String, dynamic>> items = globalState.produits
-                                    .where((p) => p['nom'] == produit['nom'])
+                                List<Map<String, dynamic>> items = globalState.produitsDetails
+                                    .where((p) => p['id_produit'] == produit['id_produit'])
                                     .toList();
-
+                                final sommeStock = globalState.produitsDetails.firstWhere((detailProduit) => detailProduit['id_produit'] == produit['id_produit']);
                                 showDialog(
                                   context: context,
                                   builder: (context) {
@@ -141,8 +141,8 @@ class _AcceuilState extends State<Acceuil> {
                                     return AcheterProduit(
                                       id: items.first['id_produit'],
                                       nom: produit['nom'],
-                                      lanja: items.first['stock'],
-                                      prix: items.first['prix_entrer'],
+                                      lanja: sommeStock['stock'],
+                                      prix: sommeStock['prix_entrer'],
                                       items: items,
                                     );
                                   },
