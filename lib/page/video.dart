@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:untitled/page/acceuil.dart';
 import 'package:untitled/page/ajouter_produit.dart';
 import 'package:untitled/page/historique.dart';
+import 'package:untitled/page/list_pdf.dart';
 import 'package:untitled/page/list_tous_vente.dart';
 import 'package:video_player/video_player.dart';
 //import 'package:video_player/list_tous_vente.dart';
@@ -80,7 +81,10 @@ class _VideoState extends State<Video> {
                   padding: const EdgeInsets.only(bottom: 85.0),
                   child: ListTousVente(),
                 ),
-                Center(child: Text("Page 5", style: TextStyle(color: Colors.white))),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 85.0),
+                  child: ListPdf(),
+                ),
               ],
             ),
           ),

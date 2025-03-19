@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart'; // Pour formater la date
 import 'package:untitled/controller/controller.dart';
+import 'package:untitled/tools/generat_to_pdf.dart';
 
 class Historique extends StatefulWidget {
   const Historique({super.key});
@@ -63,27 +64,50 @@ class _HistoriqueState extends State<Historique> {
   @override
   Widget build(BuildContext context) {
     final globalState = Provider.of<Controller>(context);
+    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    var ventesDuJour = globalState.ventes.where((vente) {
+      DateTime venteDate = DateTime.parse(vente['date']);
+      String venteDateFormatted =
+      DateFormat('yyyy-MM-dd').format(venteDate);
+      return venteDateFormatted == today;
+    }).toList();
 
+    ventesDuJour.sort((a, b) {
+      DateTime dateA = DateTime.parse(a['date']);
+      DateTime dateB = DateTime.parse(b['date']);
+      return dateB.compareTo(dateA);
+    });
     return Padding(
       padding: const EdgeInsets.only(top: 25.0),
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.symmetric(vertical: 10),
+            padding: EdgeInsets.only(top: 5, bottom: 1),
             decoration: BoxDecoration(
               color: Colors.transparent, // Bleu profond
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Text(
-              "Varotra androany",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white, // Texte blanc
-              ),
+            child: Row(
+              children: [
+                Text(
+                  "Varotra androany",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white, // Texte blanc
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.picture_as_pdf),
+                  onPressed: () {
+                    generateAndSavePDF(ventesDuJour, globalState);
+                  },
+                )
+
+              ],
             ),
           ),
-          SizedBox(height: 10),
+          //SizedBox(height: 5),
           Expanded(
             child: FutureBuilder<void>(
               future: _loadDataFuture,
@@ -92,19 +116,7 @@ class _HistoriqueState extends State<Historique> {
                   return Center(child: CircularProgressIndicator());
                 }
 
-                String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-                var ventesDuJour = globalState.ventes.where((vente) {
-                  DateTime venteDate = DateTime.parse(vente['date']);
-                  String venteDateFormatted =
-                  DateFormat('yyyy-MM-dd').format(venteDate);
-                  return venteDateFormatted == today;
-                }).toList();
 
-                ventesDuJour.sort((a, b) {
-                  DateTime dateA = DateTime.parse(a['date']);
-                  DateTime dateB = DateTime.parse(b['date']);
-                  return dateB.compareTo(dateA);
-                });
 
                 if (ventesDuJour.isEmpty) {
                   return Center(
@@ -114,6 +126,7 @@ class _HistoriqueState extends State<Historique> {
                 }
 
                 return Column(
+                  //mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -172,75 +185,77 @@ class _HistoriqueState extends State<Historique> {
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Container(
-              height: 100,
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    ..._getProduitQuantities(
-                        globalState.ventes, globalState.produits, globalState.produitsDetails)
-                        .asMap()
-                        .entries
-                        .map(
-                          (entry) {
-                        int index = entry.key + 1;
-                        var produitQuantite = entry.value;
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 2.0),
+              child: Container(
+                height: 100,
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      ..._getProduitQuantities(
+                          globalState.ventes, globalState.produits, globalState.produitsDetails)
+                          .asMap()
+                          .entries
+                          .map(
+                            (entry) {
+                          int index = entry.key + 1;
+                          var produitQuantite = entry.value;
 
-                        return Card(
-                          color: Colors.teal.shade100, // Bleu clair/turquoise
-                          margin: EdgeInsets.symmetric(horizontal: 10),
-                          child: Container(
-                            width: 180,
-                            padding: EdgeInsets.all(10),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      padding:
-                                      EdgeInsets.symmetric(horizontal: 8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange, // Jaune/orange
-                                        borderRadius:
-                                        BorderRadius.circular(100),
+                          return Card(
+                            color: Colors.teal.shade100, // Bleu clair/turquoise
+                            margin: EdgeInsets.symmetric(horizontal: 10),
+                            child: Container(
+                              width: 180,
+                              padding: EdgeInsets.all(10),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        padding:
+                                        EdgeInsets.symmetric(horizontal: 8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange, // Jaune/orange
+                                          borderRadius:
+                                          BorderRadius.circular(100),
+                                        ),
+                                        child: Text(
+                                          "$index",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white),
+                                        ),
                                       ),
-                                      child: Text(
-                                        "$index",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white),
-                                      ),
-                                    ),
-                                    SizedBox(width: 40),
-                                    Text(produitQuantite['nom'],
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
-                                SizedBox(height: 5),
-                                Text(produitQuantite['description']
-                                    .toString()),
-                                SizedBox(height: 5),
-                                Text(
-                                  "Totaly lafo: ${produitQuantite['quantite'].toStringAsFixed(2)} Kg",
-                                  style: TextStyle(
-                                      color: Colors.teal.shade900,
-                                      fontSize: 13),
-                                ),
-                              ],
+                                      SizedBox(width: 40),
+                                      Text(produitQuantite['nom'],
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(produitQuantite['description']
+                                      .toString()),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    "Totaly lafo: ${produitQuantite['quantite'].toStringAsFixed(2)} Kg",
+                                    style: TextStyle(
+                                        color: Colors.teal.shade900,
+                                        fontSize: 13),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ).toList(),
-                  ],
+                          );
+                        },
+                      ).toList(),
+                    ],
+                  ),
                 ),
               ),
             ),
