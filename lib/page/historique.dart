@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart'; // Pour formater la date
 import 'package:untitled/controller/controller.dart';
 import 'package:untitled/tools/generat_to_pdf.dart';
+import 'dart:async';
 
 class Historique extends StatefulWidget {
   const Historique({super.key});
@@ -14,18 +15,21 @@ class Historique extends StatefulWidget {
 class _HistoriqueState extends State<Historique> {
   late Controller globalState;
   late Future<void> _loadDataFuture = _initializeData();
+  bool _pdfGeneratedToday = false; // Évite les exécutions multiples
 
   @override
   void initState() {
     super.initState();
     globalState = Provider.of<Controller>(context, listen: false);
     _loadDataFuture = _initializeData();
+
   }
 
   Future<void> _initializeData() async {
     await globalState.loadVentes();
     setState(() {});
   }
+
 
   final ScrollController _scrollController = ScrollController();
 
@@ -78,34 +82,29 @@ class _HistoriqueState extends State<Historique> {
       return dateB.compareTo(dateA);
     });
     return Padding(
-      padding: const EdgeInsets.only(top: 25.0),
+      padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 15),
       child: Column(
         children: [
-          Container(
-            padding: EdgeInsets.only(top: 5, bottom: 1),
-            decoration: BoxDecoration(
-              color: Colors.transparent, // Bleu profond
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  "Varotra androany",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white, // Texte blanc
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: Icon(Icons.picture_as_pdf),
+                onPressed: () {
+                  generateAndSavePDF(ventesDuJour, globalState);
+                },
+              ),
+              Text(
+                "Varotra androany",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue.shade900, // Texte blanc
                 ),
-                IconButton(
-                  icon: Icon(Icons.picture_as_pdf),
-                  onPressed: () {
-                    generateAndSavePDF(ventesDuJour, globalState);
-                  },
-                )
+              ),
 
-              ],
-            ),
+
+            ],
           ),
           //SizedBox(height: 5),
           Expanded(
@@ -155,7 +154,7 @@ class _HistoriqueState extends State<Historique> {
                           final descriptionProduit = globalState.produitsDetails.firstWhere(
                                   (produit) =>
                               produit['id_produit'] == vente['id_produit']);
-
+                          final lanja = vente['qualite'] * 1000;
                           final dateT = DateTime.parse(vente['date']);
                           return Card(
                             color: Colors.cyan.shade300, // Bleu très clair
@@ -170,7 +169,7 @@ class _HistoriqueState extends State<Historique> {
                                     color: Colors.teal.shade900),
                               ),
                               subtitle: Text(
-                                  "📦 Lanja : ${vente['qualite']} Kg - 💰 Vidiny : ${vente['prix_total']} Ar"),
+                                  "📦 Lanja : ${vente['qualite']} Kg  ~${lanja} Gramme~ \n💰 Vidiny : ${vente['prix_total']} Ar"),
                               trailing: Text(
                                 DateFormat('HH:mm').format(dateT),
                                 style: TextStyle(color: Colors.grey),

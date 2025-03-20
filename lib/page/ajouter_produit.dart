@@ -103,7 +103,28 @@ class _AjouterProduitState extends State<AjouterProduit> {
       //FocusScope.of(context).requestFocus(FocusNode());
 print("fermeture de la clavier");
       // ✅ Affichage de la boîte de confirmation
-
+if(prix_unitaire > prixvente){
+  showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Ooops!"),
+          content: Text("Mety ho maty antoka! \nNy nakana azy ${prix_unitaire.toString()} Ar \nandefasana azy ${prixvente.toString()} Ar"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                FocusScope.of(context).requestFocus(FocusNode());
+                Navigator.pop(context);
+               // Navigator.pop(context, false);
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+}
+  );
+  return;
+}
       final bool bob = await showConfirmationDialog(context, nom, description, prix_unitaire, prixvente, stock);
       if (!bob) {
         return;
@@ -133,16 +154,28 @@ print("fermeture de la clavier");
           );
         },
       );
-      final idProduit = globalState.produits.toList();
-final test = globalState.produitsDetails.where((produitDetail)=> produitDetail['id_produit'] ==
-    idProduit.first['id_produit'] && idProduit.first['nom'] == nom && produitDetail['description'] == description).toList();
+
+      final idProduit = globalState.produits.firstWhere(
+            (produit) => produit['nom'] == nom,
+        orElse: () => {}, // Évite une erreur si aucun produit ne correspond
+      );
+      final id = idProduit['id_produit'];
+      final produitNom = idProduit['nom'];
+      print("Premier ID: $id, Nom: $produitNom");
+      print("Valeur recherchée - Nom: $nom, Description: $description");
+      final test = globalState.produitsDetails.where((produitDetail) =>
+      produitDetail['id_produit'].toString() == id.toString() &&
+          produitNom == nom &&
+          produitDetail['description'] == description
+      ).toList();
       final test2 = globalState.produits.where((produitDetail)=> produitDetail['nom'] == nom).toList();
+      print("le id produit : $idProduit voici le first ${idProduit['id_produit']}");
 print("le tset2 dans notre base de donnees, 65456465464 : $test2");
 
-print("le tsest $test *-*-*-*-*-*-*-*-*-*");
+print("le test $test *-*-*-*-*-*-*-*-*-*");
 double sommeStock = globalState.produitsDetails
-          .where((detailProduit) => detailProduit['id_produit'] == idProduit.first['id_produit']
-    && idProduit.first['nom'] == nom && detailProduit['description'] == description)
+          .where((detailProduit) => detailProduit['id_produit'] == idProduit['id_produit']
+    && produitNom == nom && detailProduit['description'] == description)
           .fold(0, (somme, detailProduit) => somme + detailProduit['stock']);
 double sommeTotalStock = sommeStock + stock;
       try {
@@ -174,6 +207,7 @@ double sommeTotalStock = sommeStock + stock;
           }
         }
         else{
+          print("nous sommes dans le update fonction: $nom, le test est $test");
           await globalState.updateProduitDetail(prix_unitaire: prix_unitaire,
               prix_entrer: prixvente,
               status: statut,

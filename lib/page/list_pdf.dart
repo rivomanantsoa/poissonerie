@@ -48,20 +48,20 @@ class _ListPdfState extends State<ListPdf> {
           children: [
             // Titre et bouton de rafraîchissement
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+              padding: EdgeInsets.only(left: 10, right: 10, top: 15),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Liste des PDFs",
+                    "Lisitr'ireo raki-tsoratra",
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Colors.blue.shade900,
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.refresh, color: Colors.white),
+                    icon: Icon(Icons.refresh, color: Colors.blue.shade900),
                     onPressed: _loadPdfFiles,
                   ),
                 ],
@@ -72,6 +72,7 @@ class _ListPdfState extends State<ListPdf> {
 
             // Liste des PDF
             Expanded(
+
               child: pdfFiles.isEmpty
                   ? Center(
                 child: Text(

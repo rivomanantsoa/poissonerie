@@ -67,7 +67,7 @@ class _ListTousVenteState extends State<ListTousVente> {
     final globalState = Provider.of<Controller>(context);
 
     return Padding(
-      padding: const EdgeInsets.only(top: 30.0, left: 10),
+      padding: const EdgeInsets.only(left: 10.0,right: 10, top: 25, bottom: 1),
       child: Column(
         children: [
           Text(
@@ -97,6 +97,7 @@ class _ListTousVenteState extends State<ListTousVente> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: ListView(
+                        padding: EdgeInsets.only(top: 10),
                         children: ventesGrouped.keys.map((year) {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

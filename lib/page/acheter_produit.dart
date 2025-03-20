@@ -80,7 +80,7 @@ bool isChecked = false;
             return AlertDialog(
               title: const Text("Confirmation"),
               content: Text("Prix acheter : $prix_payer Ar/kg\n"
-                  "Kilos : $quantite kg"),
+                  "Kilos : $quantite kg ~${(quantite * 1000)} gramme~"),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
@@ -122,23 +122,23 @@ bool isChecked = false;
             );
           },
         );
-
-
         try {
           await globalState.addVente(
               qualite: quantite,
               prixTotal: prix_payer,
               date: date_debut.toIso8601String(),
               idProduit: idB);
-          double newStock = widget.lanja - quantite;
-          print("fit avec success $newStock");
+
+
           final idF = widget.items.firstWhere(
                   (item) => item['description'] == selectedDescription,
               orElse: () => {} // Si aucun élément n'est trouvé, retourner un Map vide.
           );
 
-          int? id = idF.isNotEmpty ? int.tryParse(idF['id_produitDetail'].toString()) : widget.id;  // S'assurer que 'id_produit' est bien converti en int
 
+          int? id = idF.isNotEmpty ? int.tryParse(idF['id_produitDetail'].toString()) : widget.id;  // S'assurer que 'id_produit' est bien converti en int
+          double newStock = idF.isNotEmpty ? idF['stock'] - quantite : widget.lanja - quantite;
+          print("fit avec success $newStock");
 // Vérifier si 'id' est valide avant de l'utiliser
           if (id != null) {
             await globalState.updateProduitDetailsK(id: id, stock:newStock);
@@ -175,7 +175,6 @@ bool isChecked = false;
         } catch (e) {
           // ✅ Fermer le loader en cas d'erreur
           Navigator.pop(context);
-
           print("Erreur lors de l'ajout du produit : $e");
 
           // ✅ Fermer le clavier avant d'afficher le message d'erreur
