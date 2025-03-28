@@ -74,17 +74,18 @@ class _VideoState extends State<Video> {
   }
 
   void _scheduleDailyPDFGeneration() {
+    print("les produits sont ivggg: ${(globalState.rapports.toList())}");
     if (_pdfGeneratedToday) {
       print("🚫 Le Timer ne démarre pas car le PDF a déjà été généré aujourd’hui.");
       return;
     }
 
     print("📌 Timer démarré !");
-    Timer.periodic(Duration(minutes: 1), (timer) {
+    Timer.periodic(Duration(minutes: 1), (timer) async {
       final now = DateTime.now();
       print("⏰ Heure actuelle : ${now.hour}:${now.minute}");
 
-      if (now.hour == 16 && now.minute == 22) {
+      if (now.hour == 20 && now.minute == 15) {
         _pdfGeneratedToday = true;
         _savePdfGeneratedState(); // 🔄 Sauvegarde la date pour éviter la génération multiple
         print("✅ Génération du PDF à 15:59 !");
@@ -96,6 +97,12 @@ class _VideoState extends State<Video> {
         }).toList();
 
         generateAndSavePDF(ventesDuJour, globalState);
+        try{
+          await globalState.addRapport(nom: now.toIso8601String(), date: now.toIso8601String());
+          print("c tfffafghjkoiuyg");
+        }catch(e){
+          print("erreur de l'insertion");
+        }
       }
 
       // 🔄 Réinitialisation après minuit

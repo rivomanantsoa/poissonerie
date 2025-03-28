@@ -48,6 +48,13 @@ class Controller extends ChangeNotifier {
             FOREIGN KEY (id_produit) REFERENCES Produit (id_produit) ON DELETE CASCADE
           )
         ''');
+        await db.execute('''
+          CREATE TABLE Rapport (
+            id_rapport INTEGER PRIMARY KEY AUTOINCREMENT,
+            nom text,
+            date TEXT NOT NULL
+           )
+        ''');
       },
     );
 
@@ -60,6 +67,7 @@ class Controller extends ChangeNotifier {
   List<Map<String, dynamic>> produits = [];
   List<Map<String, dynamic>> produitsDetails = [];
   List<Map<String, dynamic>> ventes = [];
+  List<Map<String, dynamic>> rapports = [];
 
   // 🔹 CRUD : Produit
 
@@ -77,8 +85,27 @@ class Controller extends ChangeNotifier {
     // Retourner l'ID de l'insertion
     return id;
   }
+  Future<void> addRapport({
+    required String nom,
+    required String date,
 
+  }) async {
+     await _db.insert('Rapport', {
+      'nom': nom,
+       'date' : date,
+    });
 
+    print("ID du produit inséré : ");
+    await loadProduits(); // Recharger les produits après l'ajout
+    // Retourner l'ID de l'insertion
+
+  }
+
+  Future<void> loadRapport() async {
+    rapports = await _db.query('Rapport');
+    print("📌 Produits chargés : $required");
+    notifyListeners();
+  }
 
   // Lire tous les produits
   Future<void> loadProduits() async {

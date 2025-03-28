@@ -136,7 +136,7 @@ class _HistoriqueState extends State<Historique> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          " - Totalin'ny lafo : ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['qualite'] ?? 0) as double)).toStringAsFixed(2)} Kg\n"
+                          " - Totalin'ny lafo : ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['qualite'] ?? 0) as double)).toStringAsFixed(3)} Kg\n"
                               " - Vola: ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['prix_total'] ?? 0) as double)).toStringAsFixed(2)} Ariary",
                           style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
@@ -154,7 +154,7 @@ class _HistoriqueState extends State<Historique> {
                           final descriptionProduit = globalState.produitsDetails.firstWhere(
                                   (produit) =>
                               produit['id_produit'] == vente['id_produit']);
-                          final lanja = vente['qualite'] * 1000;
+                          final lanja = (vente['qualite'] * 1000).toStringAsFixed(3);
                           final dateT = DateTime.parse(vente['date']);
                           return Card(
                             color: Colors.cyan.shade300, // Bleu très clair
@@ -166,10 +166,10 @@ class _HistoriqueState extends State<Historique> {
                                 style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.teal.shade900),
+                                    color: Colors.teal.shade900) ,
                               ),
                               subtitle: Text(
-                                  "📦 Lanja : ${vente['qualite']} Kg  ~${lanja} Gramme~ \n💰 Vidiny : ${vente['prix_total']} Ar"),
+                                  "📦 Lanja : ${vente['qualite'].toStringAsFixed(3)} Kg  ~${lanja} g~ \n💰 Vidiny : ${vente['prix_total']} Ar"),
                               trailing: Text(
                                 DateFormat('HH:mm').format(dateT),
                                 style: TextStyle(color: Colors.grey),

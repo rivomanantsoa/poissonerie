@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/controller/controller.dart';
 import 'package:untitled/page/menu.dart';
+import 'package:untitled/page/principale.dart';
 import 'package:untitled/page/video.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -49,7 +50,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: Video(),
+      home: Principale(),
     );
   }
 }
