@@ -7,6 +7,7 @@ import 'package:untitled/page/list_tous_vente.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart'; // Pour formater la date
 import 'package:untitled/controller/controller.dart';
+import 'package:untitled/stock_managing/graph.dart';
 import 'package:untitled/tools/generat_to_pdf.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,11 +27,13 @@ class _VideoState extends State<Video> {
   void initState() {
     super.initState();
     globalState = Provider.of<Controller>(context, listen: false);
-     // 🚀 Lance directement le Timer
+    globalState.id_vente;
+    // 🚀 Lance directement le Timer
     _initializePDFGeneration();
-
   }
+
   Future<void> _initializePDFGeneration() async {
+    await globalState.id_vente;
     await _loadPdfGeneratedState(); // 🔄 Charger l'état sauvegardé
     if (!_pdfGeneratedToday) {
       _scheduleDailyPDFGeneration(); // 🚀 Démarrer le Timer seulement si nécessaire
@@ -45,13 +48,12 @@ class _VideoState extends State<Video> {
     globalState = Provider.of<Controller>(context, listen: false);
     _scheduleDailyPDFGeneration(); // 🚀 Lance le Timer après insertion dans l'arbre
   }
+
   void setCurrentIndex(int index) {
     setState(() {
       _currentIndex = index;
     });
   }
-
-
 
   Future<void> _loadPdfGeneratedState() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -63,8 +65,7 @@ class _VideoState extends State<Video> {
       _pdfGeneratedToday = true;
     }
 
-   // _scheduleDailyPDFGeneration(); // 🕒 Démarre le timer après avoir chargé l’état
-
+    // _scheduleDailyPDFGeneration(); // 🕒 Démarre le timer après avoir chargé l’état
   }
 
   Future<void> _savePdfGeneratedState() async {
@@ -76,7 +77,8 @@ class _VideoState extends State<Video> {
   void _scheduleDailyPDFGeneration() {
     print("les produits sont ivggg: ${(globalState.rapports.toList())}");
     if (_pdfGeneratedToday) {
-      print("🚫 Le Timer ne démarre pas car le PDF a déjà été généré aujourd’hui.");
+      print(
+          "🚫 Le Timer ne démarre pas car le PDF a déjà été généré aujourd’hui.");
       return;
     }
 
@@ -97,10 +99,11 @@ class _VideoState extends State<Video> {
         }).toList();
 
         generateAndSavePDF(ventesDuJour, globalState);
-        try{
-          await globalState.addRapport(nom: now.toIso8601String(), date: now.toIso8601String());
+        try {
+          await globalState.addRapport(
+              nom: now.toIso8601String(), date: now.toIso8601String());
           print("c tfffafghjkoiuyg");
-        }catch(e){
+        } catch (e) {
           print("erreur de l'insertion");
         }
       }
@@ -113,21 +116,19 @@ class _VideoState extends State<Video> {
       }
     });
   }
-
-
+  final List<String> _titles = ['Home', 'Historique'];
   @override
   Widget build(BuildContext context) {
+    final globalState = Provider.of<Controller>(context);
     return Scaffold(
+    backgroundColor: Colors.cyanAccent.shade700,
+      appBar: AppBar(
+        title: Center(child: Text(_titles[_currentIndex], style: TextStyle(fontSize: 35, fontWeight: FontWeight.w500,),)),
+        backgroundColor: Colors.white,
+      ),
       body: Stack(
         children: [
           // 🌊 Image de fond
-          Positioned.fill(
-            child: Image.asset(
-              "assets/image/bleu.png",
-              fit: BoxFit.cover,
-            ),
-          ),
-
           // 📄 Contenu au-dessus de l'image
           Positioned.fill(
             child: IndexedStack(
@@ -141,73 +142,107 @@ class _VideoState extends State<Video> {
                   padding: const EdgeInsets.only(bottom: 85.0),
                   child: Historique(),
                 ),
-                Center(child: Text("Page 4", style: TextStyle(color: Colors.white))),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 85.0),
-                  child: ListTousVente(),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 85.0),
-                  child: ListPdf(),
-                ),
+                Center(
+                    child:
+                        Text("Page 4", style: TextStyle(color: Colors.white))),
+
               ],
             ),
           ),
 
           // ⚡ BottomNavigationBar SUPERPOSÉ avec fond semi-transparent
           Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20), bottom: Radius.circular(20)),
-                ),
-                child: BottomNavigationBar(
-                  backgroundColor: Colors.transparent,
-                  currentIndex: _currentIndex,
-                  onTap: (index) {
-                    if (index == 2) {
-                      showDialog(
-                          context: context,
-                          builder: (context) => AjouterProduit());
-                    } else {
-                      setCurrentIndex(index);
-                    }
-                  },
-                  type: BottomNavigationBarType.fixed,
-                  selectedItemColor: Colors.yellow,
-                  unselectedItemColor: Colors.white,
-                  items: [
-                    BottomNavigationBarItem(icon: Icon(Icons.home), label: "Trano"),
-                    BottomNavigationBarItem(icon: Icon(Icons.history), label: "Zava-nisy"),
-                    BottomNavigationBarItem(
-                      icon: Container(
-                        width: 50,
-                        height: 40,
+            bottom: 4,
+            left: 9,
+            right: 16,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Conteneur arrondi pour Home et Historique
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent, // Fond semi-transparent
+                    borderRadius: BorderRadius.circular(10), // Coins arrondis
+
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 55,
+                        height: 55,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: _currentIndex == 0 ? Colors.teal : Colors.white,
                           shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black54,
+                              blurRadius: 4,
+                              spreadRadius: 1,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
                         ),
-                        child: const Icon(
-                          Icons.add_circle,
-                          size: 37,
-                          color: Colors.black,
+                        child: IconButton(
+                          icon: Icon(Icons.home_outlined, size: 32, color: Colors.black),
+                          onPressed: () => setCurrentIndex(0),
                         ),
                       ),
-                      label: "",
-                      backgroundColor: Colors.blue,
-                    ),
-                    BottomNavigationBarItem(icon: Icon(Icons.library_books), label: "Lisitra"),
-                    BottomNavigationBarItem(icon: Icon(Icons.add_alert_sharp), label: "Tatitra"),
-                  ],
+                      SizedBox(width: 16), // Espacement entre les icônes
+                      Container(
+                        width: 55,
+                        height: 55,
+                        decoration: BoxDecoration(
+                          color: _currentIndex == 1 ? Colors.teal : Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black54,
+                              blurRadius: 4,
+                              spreadRadius: 1,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.history, size: 32, color: Colors.black),
+                          onPressed: () => setCurrentIndex(1),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+
+                // Icône Print à droite (affichée seulement si globalState.id_vente != 0)
+                if (globalState.id_vente != 0)
+                  Container(
+                    width: 55,
+                    height: 55,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black54,
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.print, size: 32, color: Colors.black),
+                      onPressed: () {
+                        // Ajoute ici l'action du bouton print
+                      },
+                    ),
+                  ),
+              ],
             ),
           ),
+
+
+
         ],
       ),
     );

@@ -18,7 +18,9 @@ class Controller extends ChangeNotifier {
         await db.execute('''
           CREATE TABLE Produit (
             id_produit INTEGER PRIMARY KEY AUTOINCREMENT,
-            nom TEXT NOT NULL  
+            nom TEXT NOT NULL,
+            id_vente INTEGER NOT NULL,
+            FOREIGN KEY (id_vente) REFERENCES Vente (id_vente) ON DELETE CASCADE  
           )
         ''');
         await db.execute('''
@@ -35,8 +37,28 @@ class Controller extends ChangeNotifier {
             FOREIGN KEY (id_produit) REFERENCES Produit (id_produit) ON DELETE CASCADE
           )
         ''');
-
-
+        await db.execute('''
+          CREATE TABLE Historique (
+            id_historique INTEGER PRIMARY KEY AUTOINCREMENT,
+            qualite REAL,
+            prix_achat REAL,
+            prix_vente REAL,
+            date TEXT NOT NULL,
+            id_produit INTEGER NOT NULL,
+            FOREIGN KEY (id_produit) REFERENCES Produit (id_produit) ON DELETE CASCADE
+            
+          )
+        ''');
+        // Table ticket
+        await db.execute('''
+          CREATE TABLE Ticket (
+            id_ticket INTEGER PRIMARY KEY AUTOINCREMENT,
+            date_heure DATETIME DEFAULT CURRENT_TIMESTAMP,
+            montant_total REAL NOT NULL,
+            reste_a_payer REAL DEFAULT 0,
+            mode_paiement TEXT            
+        )
+        ''');
         // Table Vente
         await db.execute('''
           CREATE TABLE Vente (
@@ -45,9 +67,12 @@ class Controller extends ChangeNotifier {
             prix_total REAL,
             date TEXT NOT NULL,
             id_produit INTEGER NOT NULL,
-            FOREIGN KEY (id_produit) REFERENCES Produit (id_produit) ON DELETE CASCADE
+            id_ticket INTEGER NOT NULL,
+            FOREIGN KEY (id_produit) REFERENCES Produit (id_produit) ON DELETE CASCADE,
+            FOREIGN KEY (id_ticket) REFERENCES Ticket (id_ticket) ON DELETE CASCADE
           )
         ''');
+
         await db.execute('''
           CREATE TABLE Rapport (
             id_rapport INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,6 +86,7 @@ class Controller extends ChangeNotifier {
     await loadProduits();
     await loadProduitsDetails();
     await loadVentes();
+    await loadTickets();
   }
 
   // Listes des données
@@ -68,16 +94,20 @@ class Controller extends ChangeNotifier {
   List<Map<String, dynamic>> produitsDetails = [];
   List<Map<String, dynamic>> ventes = [];
   List<Map<String, dynamic>> rapports = [];
-
+  List<Map<String, dynamic>> historiques = [];
+  List<Map<String, dynamic>> ticktes = [];
+  late int id_vente = 0;
   // 🔹 CRUD : Produit
 
   // Ajouter un produit
   Future<int> addProduit({
     required String nom,
+    required int id_vente,
 
   }) async {
   int id =  await _db.insert('Produit', {
       'nom': nom,
+       'id_vente': id_vente,
     });
 
     print("ID du produit inséré : ");
@@ -85,6 +115,38 @@ class Controller extends ChangeNotifier {
     // Retourner l'ID de l'insertion
     return id;
   }
+  Future<int> ajouterId({required int id_v}) async {
+    id_vente = id_v;
+    notifyListeners(); // Notifie les widgets écoutant ce changement
+    return id_v;
+  }
+
+  Future<void> loadId() async {
+    rapports = await _db.query('Rapport');
+    print("📌 Produits chargés : $required");
+    notifyListeners();
+  }
+
+
+
+  Future<int> addProduit_Vente({
+    required int id_vente,
+    required int id_produit,
+
+  }) async {
+    int id =  await _db.insert('Produit', {
+      'id_vente': id_vente,
+      'id_produit' : id_produit,
+    });
+
+    print("ID du produit inséré : ");
+    await loadProduits(); // Recharger les produits après l'ajout
+    await loadVentes();
+    // Retourner l'ID de l'insertion
+    return id;
+  }
+
+
   Future<void> addRapport({
     required String nom,
     required String date,
@@ -106,6 +168,10 @@ class Controller extends ChangeNotifier {
     print("📌 Produits chargés : $required");
     notifyListeners();
   }
+
+
+  /* porduit ************************/
+
 
   // Lire tous les produits
   Future<void> loadProduits() async {
@@ -239,28 +305,89 @@ return id;
   }
 
 
+
+
+  /* Crud : Tickets */
+
+  Future<void> loadTickets() async {
+    ticktes = await _db.query('Ticket');
+    print("📌 Produits chargés : $ticktes");
+    notifyListeners();
+  }
+
+  Future<int> addTicket({
+    required double reste,
+    required double montant,
+    required String date,
+    required String paiement,
+  }) async {
+    int idt = await _db.insert('Ticket', {
+      'montant_total' : montant,
+      'reste_a_payer' : reste,
+      'mode_paiement': paiement,
+      'date_heure' : date,
+
+    });
+    print("dans contrroler les produits sont: $idt");
+    await loadTickets();
+    return idt;
+  }
+
+
+
+  // Crud : historique
+
+  Future<int> addHistorique({
+    required double prix_achat,
+    required double prix_vente,
+    required String date,
+    required double qualite,
+    required int id,
+  }) async {
+    int idt = await _db.insert('Historique', {
+      'prix_achat' : prix_achat,
+      'prix_vente' : prix_vente,
+      'qualite': qualite,
+      'date' : date,
+      'id_produit' : id,
+    });
+    print("dans contrroler les produits sont: $idt");
+    await loadHistoriques();
+    return id;
+  }
+  Future<void> loadHistoriques() async {
+    historiques = await _db.query('Historique');
+    print("📌 Produits chargés : $historiques");
+    notifyListeners();
+  }
+
   // 🔹 CRUD : Vente
 
   // Ajouter une vente
-  Future<void> addVente({
+  Future<int> addVente({
     required double qualite,
     required double prixTotal,
     required String date,
     required int idProduit,
+    required int id_ticket,
   }) async {
-    await _db.insert('Vente', {
+  int id =  await _db.insert('Vente', {
       'qualite': qualite,
       'prix_total': prixTotal,
       'date': date,
       'id_produit': idProduit,
+      'id_ticket': id_ticket,
     });
+  await id_vente;
     await loadVentes();
+    return id;
   }
 
   // Lire toutes les ventes
   Future<void> loadVentes() async {
     ventes = await _db.query('Vente');
     print("📌 Ventes chargées : $ventes");
+    await id_vente;
     notifyListeners();
   }
 

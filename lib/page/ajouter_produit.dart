@@ -184,6 +184,7 @@ double sommeTotalStock = sommeStock + stock;
           print("tafiditr ATO VE O");
           int id = await globalState.addProduit(
             nom: nom,
+            id_vente : 0,
           );
           await globalState.addProduitDetail(prix_unitaire: prix_unitaire,
               prix_entrer: prixvente,
@@ -192,6 +193,11 @@ double sommeTotalStock = sommeStock + stock;
               date_ajout: date_debut.toIso8601String(),
               date_fin: date_fin.toIso8601String(),
               description: description,
+              id: id);
+          await globalState.addHistorique(prix_achat: prix_unitaire,
+              prix_vente: prixvente,
+              qualite: sommeTotalStock,
+              date: date_debut.toIso8601String(),
               id: id);
         }else{
             {
@@ -202,6 +208,11 @@ double sommeTotalStock = sommeStock + stock;
                   date_ajout: date_debut.toIso8601String(),
                   date_fin: date_fin.toIso8601String(),
                   description: description,
+                  id: test2.first['id_produit']);
+              await globalState.addHistorique(prix_achat: prix_unitaire,
+                  prix_vente: prixvente,
+                  qualite: sommeTotalStock,
+                  date: date_debut.toIso8601String(),
                   id: test2.first['id_produit']);
             }
           }
@@ -214,6 +225,11 @@ double sommeTotalStock = sommeStock + stock;
               stock: sommeTotalStock,
               date_ajout: date_debut.toIso8601String(),
               date_fin: date_fin.toIso8601String(),
+              id: test.first['id_produitDetail']);
+          await globalState.addHistorique(prix_achat: prix_unitaire,
+              prix_vente: prixvente,
+              qualite: sommeTotalStock,
+              date: date_debut.toIso8601String(),
               id: test.first['id_produitDetail']);
         }
 

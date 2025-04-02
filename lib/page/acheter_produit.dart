@@ -69,7 +69,7 @@ bool isChecked = false;
       final idB = widget.items.length > 1 ? id : widget.id;
       final vidinyB = widget.items.length > 1 ? vidiny : prix_payer;
       print("vidiny be 00000000 $vidinyB");
-      if (quantite < (widget.items.length > 1 ?  lanja : widget.lanja)) {
+      if (quantite <= (widget.items.length > 1 ?  lanja : widget.lanja)) {
         // ✅ Fermer le clavier avant d'afficher le dialogue de confirmation
         FocusScope.of(context).requestFocus(FocusNode());
 
@@ -123,11 +123,16 @@ bool isChecked = false;
           },
         );
         try {
-          await globalState.addVente(
+          int  id_ticket = await
+          globalState.addTicket(reste: 0, montant: prix_payer, date: date_debut.toIso8601String(), paiement: "Cash");
+     int  id_vente =   await globalState.addVente(
               qualite: quantite,
               prixTotal: prix_payer,
               date: date_debut.toIso8601String(),
-              idProduit: idB);
+              idProduit: idB, id_ticket: id_ticket);
+     if( globalState.id_vente == 0 ){
+      await globalState.ajouterId(id_v: id_vente);
+     }
 
 
           final idF = widget.items.firstWhere(
