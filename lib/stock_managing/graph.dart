@@ -17,7 +17,7 @@ class _GraphState extends State<Graph> {
     // Calcul du stock actuel par produit
     Map<int, double> stockActuel = {};
     for (var produit in globalState.produitsDetails) {
-      int idProduit = produit['id_produit'];
+      int idProduit = produit['id_produitDetail'];
       double stock = produit['stock'] ?? 0.0;
       stockActuel[idProduit] = stock;
     }
@@ -25,9 +25,11 @@ class _GraphState extends State<Graph> {
     // Calcul de la somme des quantités ajoutées depuis l'historique
     Map<int, double> totalAjoute = {};
     for (var historique in globalState.historiques) {
-      int idProduit = historique['id_produit'];
+      int idProduit = historique['id_produitDetail'];
       double qualite = historique['qualite'] ?? 0.0;
+      print("les id_produit detail dans la quantilete : $qualite 020020202");
       totalAjoute[idProduit] = (totalAjoute[idProduit] ?? 0) + qualite;
+      print("les chose apres dans graph : ${totalAjoute[idProduit]}");
     }
 
     // Calcul du pourcentage de stock restant
@@ -45,7 +47,8 @@ class _GraphState extends State<Graph> {
       );
 
       String nom = produit['nom'];
-      double stockInitial = totalAjoute[idProduit] ?? 0.0;
+      double stockInitial = totalAjoute[idDetailProduit] ?? 0.0;
+      print("stockRestant : $stockRestant, stockInitial : $stockInitial voici le nom : $nom");
       double pourcentageStock = stockInitial > 0 ? (stockRestant / stockInitial) * 100 : 0.0;
 
       stockData.add({
@@ -98,13 +101,14 @@ class _GraphState extends State<Graph> {
                   double pourcentage = filteredStockData[index]['pourcentage'].toDouble();
 
                   Color barColor = pourcentage == 100
-                      ? Colors.green
+                      ? Colors.lightGreenAccent.shade400
                       : (pourcentage >= 50
-                      ? Colors.orange
+                      ? Colors.amber.shade400
                       : (pourcentage >= 10
-                      ? Colors.yellow
+                      ? Colors.yellowAccent
                       : Colors.red));
                   return Card(
+                    color: Colors.blue.shade50,
                     elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),

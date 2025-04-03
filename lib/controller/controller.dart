@@ -44,7 +44,10 @@ class Controller extends ChangeNotifier {
             prix_achat REAL,
             prix_vente REAL,
             date TEXT NOT NULL,
+            id_produitDetail INTEGER NOT NULL,
             id_produit INTEGER NOT NULL,
+            FOREIGN KEY (id_produitDetail) REFERENCES ProduitDetail (id_produitDetail) ON DELETE CASCADE,
+           
             FOREIGN KEY (id_produit) REFERENCES Produit (id_produit) ON DELETE CASCADE
             
           )
@@ -247,7 +250,7 @@ class Controller extends ChangeNotifier {
     });
     print("dans contrroler les produits sont: $idt");
     await loadProduitsDetails();
-return id;
+return idt;
   }
   Future<void> updateProduitDetailsK({
     required int id,
@@ -343,6 +346,7 @@ return id;
     required String date,
     required double qualite,
     required int id,
+    required int id_detail,
   }) async {
     int idt = await _db.insert('Historique', {
       'prix_achat' : prix_achat,
@@ -350,6 +354,7 @@ return id;
       'qualite': qualite,
       'date' : date,
       'id_produit' : id,
+      'id_produitDetail': id_detail,
     });
     print("dans contrroler les produits sont: $idt");
     await loadHistoriques();

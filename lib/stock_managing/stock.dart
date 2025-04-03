@@ -30,27 +30,48 @@ class _StockState extends State<Stock> {
     await globalState.loadProduits();
     await globalState.loadProduitsDetails();
     await globalState.loadHistoriques();
-
+    filteredProduitsDetails = globalState.produitsDetails;
     setState(() {
-      filteredProduitsDetails = globalState.produitsDetails;
+
     });
   }
 
   void filterProduits(String query, List<Map<String, dynamic>> produitsDetails,
       List<Map<String, dynamic>> produits) {
+    filteredProduitsDetails = query.isEmpty
+        ? produitsDetails
+        : produitsDetails.where((item) {
+      final produit = produits.firstWhere(
+              (p) => p['id_produit'] == item['id_produit'],
+          orElse: () => {});
+      print("Produit trouvé pour id_produit ${item['id_produit']}: $produit");
+      return produit.isNotEmpty &&
+          produit['nom']
+              .toString()
+              .toLowerCase()
+              .contains(query.toLowerCase());
+    }).toList();
     setState(() {
-      filteredProduitsDetails = query.isEmpty
-          ? produitsDetails
-          : produitsDetails.where((item) {
-        final produit = produits
-            .firstWhere((p) => p['id_produit'] == item['id_produit']);
-        return produit['nom']
-            .toString()
-            .toLowerCase()
-            .contains(query.toLowerCase());
-      }).toList();
+
+
+
+      // Tri basé sur le nom du produit
+      filteredProduitsDetails.sort((a, b) {
+        final produitA = produits.firstWhere(
+                (p) => p['id_produit'] == a['id_produit'],
+            orElse: () => {});
+        final produitB = produits.firstWhere(
+                (p) => p['id_produit'] == b['id_produit'],
+            orElse: () => {});
+
+        final nomA = produitA.isNotEmpty ? produitA['nom'] ?? '' : '';
+        final nomB = produitB.isNotEmpty ? produitB['nom'] ?? '' : '';
+   print("nomA : $nomA et nomB : $nomB");
+        return nomA.compareTo(nomB);
+      });
     });
   }
+
 
   Color getStatusColor(String status) {
     switch (status) {
@@ -131,6 +152,7 @@ class _StockState extends State<Stock> {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(10.0),
+
               itemCount: filteredProduitsDetails.length,
               controller: _scrollController,
               itemBuilder: (context, index) {
@@ -143,18 +165,26 @@ class _StockState extends State<Stock> {
                 final produit = globalState.produits.firstWhere(
                         (p) => p['id_produit'] == item['id_produit'],
                     orElse: () => {'nom': 'Produit inconnu'});
+
+                final produitDetail = globalState.produitsDetails.firstWhere(
+                        (p) => p['id_produit'] == item['id_produit'] &&
+                            p['id_produitDetail'] == item['id_produitDetail']);
+                print("mitovy ve ny id produit detail? ${item['id_produitDetail']} et l id produit: ${produit['id_produit']}");
                 final status = item['stock'] == 0
                     ? "Rupture"
                     : item['stock'] <= 3
                     ? "Bientôt épuisé"
                     : "Disponible";
-                bool isSelected = selectedProductId == item['id_produit'];
+                bool isSelected = selectedProductId == item['id_produitDetail'];
                 var historiques = globalState.historiques
-                    .where((h) => h['id_produit'] == item['id_produit'])
+                    .where((h) => h['id_produit'] == produitDetail['id_produit']
+                    && h['id_produitDetail'] == item['id_produitDetail']) // Vérification variante
                     .toList();
+                print("les historiue sont : $historiques");
+
 
                 return Card(
-                  color: Colors.blue.shade100,
+                  color: Colors.blue.shade50,
                   elevation: 5,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   child: Column(
@@ -174,12 +204,12 @@ class _StockState extends State<Stock> {
                         trailing: Icon(isSelected ? Icons.expand_less : Icons.expand_more),
                         onTap: () {
                           setState(() {
-                            selectedProductId = isSelected ? null : item['id_produit'];
+                            selectedProductId = isSelected ? null : item['id_produitDetail'];
                           });
 
                           if (!isSelected) {
                             // Récupérer la position exacte de l'élément
-                            _scrollToItem(item['id_produit']);
+                            _scrollToItem(item['id_produitDetail']);
                           }
                         },
                       ),

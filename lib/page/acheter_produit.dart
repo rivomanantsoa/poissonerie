@@ -5,12 +5,13 @@ import 'package:provider/provider.dart';
 
 class AcheterProduit extends StatefulWidget {
    AcheterProduit(
-      {super.key, required this.id, required this.nom, required this.lanja,required this.prix, required this.items});
+      {super.key, required this.id, required this.nom, required this.lanja,required this.prix, required this.items, required this.descriptionT});
 
   final int id;
   final String nom;
   final double lanja;
   final double prix;
+  final String descriptionT;
   final List<Map<String, dynamic>>items;
 
   @override
@@ -62,11 +63,15 @@ bool isChecked = false;
               _prixTotal.text.isNotEmpty ? _prixTotal.text : "0.0") ??
           0.0;
       final find = widget.items.firstWhere(
-            (item) => item['description'] == selectedDescription,
+            (item) => item['description'] == widget.descriptionT,
         orElse: () => {'stock': 0, 'prix_entrer': 0.0},
       );
-      final id = find['id_produit'];
-      final idB = widget.items.length > 1 ? id : widget.id;
+      final finds = globalState.produitsDetails.firstWhere(
+            (item) => item['description'] == widget.descriptionT,
+        orElse: () => {'stock': 0, 'prix_entrer': 0.0},
+      );
+      final id = finds['id_produit'];
+      final idB = widget.items.length > 1 ? id : id;
       final vidinyB = widget.items.length > 1 ? vidiny : prix_payer;
       print("vidiny be 00000000 $vidinyB");
       if (quantite <= (widget.items.length > 1 ?  lanja : widget.lanja)) {
@@ -130,6 +135,7 @@ bool isChecked = false;
               prixTotal: prix_payer,
               date: date_debut.toIso8601String(),
               idProduit: idB, id_ticket: id_ticket);
+     print("le id_vente dans le globale: ${globalState.id_vente}**********");
      if( globalState.id_vente == 0 ){
       await globalState.ajouterId(id_v: id_vente);
      }
@@ -139,6 +145,7 @@ bool isChecked = false;
                   (item) => item['description'] == selectedDescription,
               orElse: () => {} // Si aucun élément n'est trouvé, retourner un Map vide.
           );
+     print("le idf ${idF}***9*9*9*");
 
 
           int? id = idF.isNotEmpty ? int.tryParse(idF['id_produitDetail'].toString()) : widget.id;  // S'assurer que 'id_produit' est bien converti en int
@@ -146,6 +153,7 @@ bool isChecked = false;
           print("fit avec success $newStock");
 // Vérifier si 'id' est valide avant de l'utiliser
           if (id != null) {
+            print("tafiditra ato indray ary isiak 9999999999999999");
             await globalState.updateProduitDetailsK(id: id, stock:newStock);
           } else {
             print('ID invalide, mise à jour annulée');

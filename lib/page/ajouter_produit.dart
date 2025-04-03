@@ -97,47 +97,45 @@ class _AjouterProduitState extends State<AjouterProduit> {
       String description = selectedType!;
       double prixvente = double.tryParse(_prixvente.text.isNotEmpty ? _prixvente.text : "0.0") ?? 0.0;
       double stock = double.tryParse(_taux.text.isNotEmpty ? _taux.text : "0.0") ?? 0.0;
-    print("le variable que ous allons enregistrer sont: nom:$nom, prix_unitite:$prix_unitaire,"
-        " status: $statut, description: $description , prix de vente: $prixvente enfin , stock: $stock");
-      // ✅ Fermer le clavier avant d'afficher le dialogue de confirmation
-      //FocusScope.of(context).requestFocus(FocusNode());
-print("fermeture de la clavier");
-      // ✅ Affichage de la boîte de confirmation
-if(prix_unitaire > prixvente){
-  showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Ooops!"),
-          content: Text("Mety ho maty antoka! \nNy nakana azy ${prix_unitaire.toString()} Ar \nandefasana azy ${prixvente.toString()} Ar"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                FocusScope.of(context).requestFocus(FocusNode());
-                Navigator.pop(context);
-               // Navigator.pop(context, false);
-              },
-              child: const Text("OK"),
-            ),
-          ],
+
+      print("📌 Variables à enregistrer :");
+      print("nom: $nom, prix_unitaire: $prix_unitaire, statut: $statut, description: $description, prix_vente: $prixvente, stock: $stock");
+
+      print("📌 Fermeture du clavier...");
+      FocusScope.of(context).requestFocus(FocusNode());
+
+      if (prix_unitaire > prixvente) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("Ooops!"),
+              content: Text("Mety ho maty antoka! \nNy nakana azy ${prix_unitaire.toString()} Ar \nandefasana azy ${prixvente.toString()} Ar"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            );
+          },
         );
-}
-  );
-  return;
-}
-      final bool bob = await showConfirmationDialog(context, nom, description, prix_unitaire, prixvente, stock);
-      if (!bob) {
         return;
       }
 
-      print("Valeur de confirmation après la boîte de dialogue : ");
+      print("📌 Affichage boîte de confirmation...");
+      final bool bob = await showConfirmationDialog(context, nom, description, prix_unitaire, prixvente, stock);
+      if (!bob) {
+        print("❌ L'utilisateur a annulé l'ajout.");
+        return;
+      }
 
-      //if (!context.mounted) return;
-
-      // ✅ Fermer le clavier avant d'afficher le loader
+      print("✅ Confirmation validée !");
       FocusScope.of(context).requestFocus(FocusNode());
 
-      // ✅ Affichage du loader AVANT l'insertion
+      print("📌 Affichage du loader...");
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -157,90 +155,111 @@ if(prix_unitaire > prixvente){
 
       final idProduit = globalState.produits.firstWhere(
             (produit) => produit['nom'] == nom,
-        orElse: () => {}, // Évite une erreur si aucun produit ne correspond
+        orElse: () => {},
       );
-      final id = idProduit['id_produit'];
-      final produitNom = idProduit['nom'];
-      print("Premier ID: $id, Nom: $produitNom");
-      print("Valeur recherchée - Nom: $nom, Description: $description");
+
+      if (idProduit == null) {
+        print("❌ Aucune correspondance trouvée pour le produit '$nom'");
+      } else {
+        print("✅ Produit trouvé: $idProduit");
+      }
+
+      final id = idProduit?['id_produit'];
+      final produitNom = idProduit?['nom'] ?? 'Inconnu';
+
+      print("🔎 ID Produit: $id, Nom Produit: $produitNom");
+      print("🔎 Recherche avec - Nom: $nom, Description: $description");
+
       final test = globalState.produitsDetails.where((produitDetail) =>
-      produitDetail['id_produit'].toString() == id.toString() &&
+      id != null && produitDetail['id_produit'].toString() == id.toString() &&
           produitNom == nom &&
           produitDetail['description'] == description
       ).toList();
-      final test2 = globalState.produits.where((produitDetail)=> produitDetail['nom'] == nom).toList();
-      print("le id produit : $idProduit voici le first ${idProduit['id_produit']}");
-print("le tset2 dans notre base de donnees, 65456465464 : $test2");
 
-print("le test $test *-*-*-*-*-*-*-*-*-*");
-double sommeStock = globalState.produitsDetails
-          .where((detailProduit) => detailProduit['id_produit'] == idProduit['id_produit']
-    && produitNom == nom && detailProduit['description'] == description)
+      final test2 = globalState.produits.where((produitDetail) => produitDetail['nom'] == nom).toList();
+
+      print("🔎 Produits existants (test2) : $test2");
+      print("🔎 Détails du produit existant (test) : $test");
+
+      if (test.isNotEmpty) {
+        print("✅ Premier élément trouvé dans test : ${test.first}");
+      } else {
+        print("⚠️ Aucune correspondance trouvée dans test.");
+      }
+
+      if (test2.isNotEmpty) {
+        print("✅ Premier élément trouvé dans test2 : ${test2.first}");
+      } else {
+        print("⚠️ Aucune correspondance trouvée dans test2.");
+      }
+
+      double sommeStock = globalState.produitsDetails
+          .where((detailProduit) => detailProduit['id_produit'] == idProduit?['id_produit']
+          && produitNom == nom && detailProduit['description'] == description)
           .fold(0, (somme, detailProduit) => somme + detailProduit['stock']);
-double sommeTotalStock = sommeStock + stock;
+
+      double sommeTotalStock = sommeStock + stock;
+
       try {
-        if(test.isEmpty) {
-          if(test2.isEmpty){
-          print("tafiditr ATO VE O");
-          int id = await globalState.addProduit(
-            nom: nom,
-            id_vente : 0,
-          );
-          await globalState.addProduitDetail(prix_unitaire: prix_unitaire,
+        if (test.isEmpty) {
+          if (test2.isEmpty) {
+            print("📌 Nouveau produit, insertion en cours...");
+            int id = await globalState.addProduit(
+              nom: nom,
+              id_vente: 0,
+            );
+            print("✅ Produit ajouté avec ID : $id");
+
+          int id_detail =  await globalState.addProduitDetail(
+              prix_unitaire: prix_unitaire,
               prix_entrer: prixvente,
               status: statut,
               stock: stock,
               date_ajout: date_debut.toIso8601String(),
               date_fin: date_fin.toIso8601String(),
               description: description,
-              id: id);
-          await globalState.addHistorique(prix_achat: prix_unitaire,
-              prix_vente: prixvente,
-              qualite: sommeTotalStock,
-              date: date_debut.toIso8601String(),
-              id: id);
-        }else{
-            {
-              await globalState.addProduitDetail(prix_unitaire: prix_unitaire,
-                  prix_entrer: prixvente,
-                  status: statut,
-                  stock: stock,
-                  date_ajout: date_debut.toIso8601String(),
-                  date_fin: date_fin.toIso8601String(),
-                  description: description,
-                  id: test2.first['id_produit']);
-              await globalState.addHistorique(prix_achat: prix_unitaire,
-                  prix_vente: prixvente,
-                  qualite: sommeTotalStock,
-                  date: date_debut.toIso8601String(),
-                  id: test2.first['id_produit']);
-            }
-          }
-        }
-        else{
-          print("nous sommes dans le update fonction: $nom, le test est $test");
-          await globalState.updateProduitDetail(prix_unitaire: prix_unitaire,
+              id: id,
+            );
+            await globalState.addHistorique(prix_achat: prix_unitaire, prix_vente: prixvente, date: date_debut.toIso8601String(),
+                qualite: stock, id: id, id_detail: id_detail);
+            print("✅ Détail du produit ajouté avec succès.");
+
+          } else {
+            print("📌 Produit existant, ajout des détails...");
+          int id_detail =  await globalState.addProduitDetail(
+              prix_unitaire: prix_unitaire,
               prix_entrer: prixvente,
               status: statut,
-              stock: sommeTotalStock,
+              stock: stock,
               date_ajout: date_debut.toIso8601String(),
               date_fin: date_fin.toIso8601String(),
-              id: test.first['id_produitDetail']);
-          await globalState.addHistorique(prix_achat: prix_unitaire,
-              prix_vente: prixvente,
-              qualite: sommeTotalStock,
-              date: date_debut.toIso8601String(),
-              id: test.first['id_produitDetail']);
+              description: description,
+              id: test2.first['id_produit'],
+            );
+          await globalState.addHistorique(prix_achat: prix_unitaire, prix_vente: prixvente, date: date_debut.toIso8601String(),
+              qualite: stock, id: id, id_detail: id_detail);
+            print("✅ Détail du produit existant ajouté avec succès.");
+          }
+        } else {
+          print("📌 Mise à jour d'un produit existant...");
+          await globalState.updateProduitDetail(
+            prix_unitaire: prix_unitaire,
+            prix_entrer: prixvente,
+            status: statut,
+            stock: sommeTotalStock,
+            date_ajout: date_debut.toIso8601String(),
+            date_fin: date_fin.toIso8601String(),
+            id: test.first['id_produitDetail'],
+          );
+          await globalState.addHistorique(prix_achat: prix_unitaire, prix_vente: prixvente, date: date_debut.toIso8601String(),
+              qualite: stock, id: id, id_detail: test.first['id_produitDetail']);
+          print("✅ Produit mis à jour avec succès.");
         }
 
-
-        // ✅ Fermer le loader après succès
+        print("📌 Fermeture du loader...");
         Navigator.pop(context);
 
-        // ✅ Fermer le clavier avant d'afficher le message de succès
-        FocusScope.of(context).requestFocus(FocusNode());
-
-        // ✅ Affichage du message de succès
+        print("✅ Succès : Produit ajouté !");
         showDialog(
           context: context,
           builder: (context) {
@@ -250,7 +269,6 @@ double sommeTotalStock = sommeStock + stock;
               actions: [
                 TextButton(
                   onPressed: () {
-                    FocusScope.of(context).requestFocus(FocusNode());
                     Navigator.pop(context);
                     Navigator.pop(context, false);
                   },
@@ -261,14 +279,8 @@ double sommeTotalStock = sommeStock + stock;
           },
         );
       } catch (e) {
-        // ✅ Fermer le loader en cas d'erreur
+        print("❌ Erreur lors de l'ajout du produit : $e");
         Navigator.pop(context);
-
-        print("Erreur lors de l'ajout du produit : $e");
-
-        // ✅ Fermer le clavier avant d'afficher le message d'erreur
-        FocusScope.of(context).requestFocus(FocusNode());
-
         showDialog(
           context: context,
           builder: (context) {
@@ -278,7 +290,6 @@ double sommeTotalStock = sommeStock + stock;
               actions: [
                 TextButton(
                   onPressed: () {
-                    FocusScope.of(context).requestFocus(FocusNode());
                     Navigator.pop(context);
                   },
                   child: const Text("OK"),
@@ -290,6 +301,7 @@ double sommeTotalStock = sommeStock + stock;
       }
     }
   }
+
 
 
 

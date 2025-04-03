@@ -86,7 +86,7 @@ class _HistoriqueState extends State<Historique> {
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               IconButton(
                 icon: Icon(Icons.picture_as_pdf),
@@ -99,7 +99,7 @@ class _HistoriqueState extends State<Historique> {
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue.shade900, // Texte blanc
+                  color: Colors.teal.shade800, // Texte blanc
                 ),
               ),
 
@@ -128,24 +128,24 @@ class _HistoriqueState extends State<Historique> {
                   //mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                      padding: const EdgeInsets.only(left: 0),
                       child: Container(
                         padding: EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.blue.shade300 , // Bleu océan plus clair
+                          color: Colors.transparent , // Bleu océan plus clair
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           " - Totalin'ny lafo : ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['qualite'] ?? 0) as double)).toStringAsFixed(3)} Kg\n"
                               " - Vola: ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['prix_total'] ?? 0) as double)).toStringAsFixed(2)} Ariary",
-                          style: TextStyle(fontSize: 18, color: Colors.white),
+                          style: TextStyle(fontSize: 18, color: Colors.teal.shade50),
                         ),
                       ),
                     ),
                     Expanded(
                       child: ListView.builder(
                         itemCount: ventesDuJour.length,
-                        padding: EdgeInsets.zero,
+                        padding: EdgeInsets.only(top: 20),
                         itemBuilder: (context, index) {
                           final vente = ventesDuJour[index];
                           final nomProduit = globalState.produits.firstWhere(
@@ -157,7 +157,7 @@ class _HistoriqueState extends State<Historique> {
                           final lanja = (vente['qualite'] * 1000).toStringAsFixed(3);
                           final dateT = DateTime.parse(vente['date']);
                           return Card(
-                            color: Colors.cyan.shade300, // Bleu très clair
+                            color: Colors.blue.shade100, // Bleu très clair
                             margin: EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 5),
                             child: ListTile(

@@ -28,255 +28,259 @@ class _AcceuilState extends State<Acceuil> {
   Widget build(BuildContext context) {
     final globalState = Provider.of<Controller>(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-          child: TextField(
-            controller: searchController,
-            decoration: InputDecoration(
-              hintText: "Recherche...",
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
-              filled: true,
-              fillColor: Colors.white,
-              prefixIcon: Icon(Icons.search),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 35.0, top: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 10, left: 80, right: 80),
+            child: TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                hintText: "Recherche...",
+                border:
+                OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (value) {
+                setState(() {});
+              },
             ),
-            onChanged: (value) {
-              setState(() {});
-            },
           ),
-        ),
-        Expanded(
-          child: FutureBuilder<void>(
-            future: _loadDataFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              }
+          Expanded(
+            child: FutureBuilder<void>(
+              future: _loadDataFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
 
-              List filteredProduits = globalState.produits
-                  .where((produit) => produit['nom']
-                      .toLowerCase()
-                      .contains(searchController.text.toLowerCase()))
-                  .toList();
+                List filteredProduits = globalState.produits
+                    .where((produit) => produit['nom']
+                    .toLowerCase()
+                    .contains(searchController.text.toLowerCase()))
+                    .toList();
 
-              // Tri par ordre alphabétique
-              filteredProduits.sort((a, b) => a['nom'].compareTo(b['nom']));
+                // Tri par ordre alphabétique
+                filteredProduits.sort((a, b) => a['nom'].compareTo(b['nom']));
 
-              if (filteredProduits.isEmpty) {
-                return Center(child: Text("Aucun produit trouvé"));
-              }
+                if (filteredProduits.isEmpty) {
+                  return Center(child: Text("Aucun produit trouvé"));
+                }
 
-              String?
-                  lastInitial; // Variable pour stocker la première lettre précédente
+                String?
+                lastInitial; // Variable pour stocker la première lettre précédente
 
-              return ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                itemCount: filteredProduits.length,
-                itemBuilder: (context, index) {
-                  final produit = filteredProduits[index];
-                  final variantes = globalState.produitsDetails
-                      .where((p) => p['id_produit'] == produit['id_produit'])
-                      .toList();
+                return ListView.builder(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  itemCount: filteredProduits.length,
+                  itemBuilder: (context, index) {
+                    final produit = filteredProduits[index];
+                    final variantes = globalState.produitsDetails
+                        .where((p) => p['id_produit'] == produit['id_produit'])
+                        .toList();
 
-                  String currentInitial = produit['nom'][0].toUpperCase();
+                    String currentInitial = produit['nom'][0].toUpperCase();
 
-                  bool showHeader = lastInitial != currentInitial;
-                  lastInitial =
-                      currentInitial; // Mettre à jour la dernière initiale traitée
+                    bool showHeader = lastInitial != currentInitial;
+                    lastInitial =
+                        currentInitial; // Mettre à jour la dernière initiale traitée
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (showHeader) // Affiche la première lettre si elle change
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 10),
-                          child: Text(
-                            currentInitial,
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (showHeader) // Affiche la première lettre si elle change
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 10),
+                            child: Text(
+                              currentInitial,
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                        ),
-                      Card(
-                        color: Colors.blue.shade100,
-                        elevation: 3,
-                        margin: EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 30,
-                                    backgroundImage:
-                                        AssetImage('assets/image/poisson.png'),
-                                  ),
-                                  SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      produit['nom'],
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
+                        Card(
+                          color: Colors.blue.shade100,
+                          elevation: 3,
+                          margin: EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 30,
+                                      backgroundImage:
+                                      AssetImage('assets/image/poisson.png'),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              Table(
-                                border: TableBorder.all(color: Colors.grey),
-                                columnWidths: {
-                                  0: FlexColumnWidth(1),
-                                  1: FlexColumnWidth(1),
-                                  2: FlexColumnWidth(1),
-                                  3: FlexColumnWidth(1),
-                                },
-                                children: [
-                                  TableRow(
-                                    decoration:
-                                        BoxDecoration(color: Colors.grey[200]),
-                                    children: [
-                                      TableCell(
-                                        verticalAlignment:
-                                            TableCellVerticalAlignment.middle,
-                                        child: Padding(
-                                          padding: EdgeInsets.all(8),
-                                          child: Text("Variante",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold)),
-                                        ),
+                                    SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        produit['nom'],
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
                                       ),
-                                      TableCell(
-                                        verticalAlignment:
-                                            TableCellVerticalAlignment.middle,
-                                        child: Padding(
-                                          padding: EdgeInsets.all(8),
-                                          child: Text("Stock",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold)),
-                                        ),
-                                      ),
-                                      TableCell(
-                                        verticalAlignment:
-                                            TableCellVerticalAlignment.middle,
-                                        child: Padding(
-                                          padding: EdgeInsets.all(8),
-                                          child: Text("Prix",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold)),
-                                        ),
-                                      ),
-                                      TableCell(
-                                        verticalAlignment:
-                                            TableCellVerticalAlignment.middle,
-                                        child: Padding(
-                                          padding: EdgeInsets.all(8),
-                                          child: Text("Action",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold)),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  for (var variante in variantes)
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                Table(
+                                  border: TableBorder.all(color: Colors.grey),
+                                  columnWidths: {
+                                    0: FlexColumnWidth(1),
+                                    1: FlexColumnWidth(1),
+                                    2: FlexColumnWidth(1),
+                                    3: FlexColumnWidth(1),
+
+                                  },
+                                  children: [
                                     TableRow(
+                                      decoration:
+                                      BoxDecoration(color: Colors.grey[200]),
                                       children: [
                                         TableCell(
                                           verticalAlignment:
-                                              TableCellVerticalAlignment.middle,
+                                          TableCellVerticalAlignment.middle,
                                           child: Padding(
                                             padding: EdgeInsets.all(8),
-                                            child:
-                                                Text(variante['description']),
+                                            child: Text("Variante",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold)),
                                           ),
                                         ),
                                         TableCell(
                                           verticalAlignment:
-                                              TableCellVerticalAlignment.middle,
+                                          TableCellVerticalAlignment.middle,
                                           child: Padding(
                                             padding: EdgeInsets.all(8),
-                                            child:
-                                                Text("${variante['stock']} Kg"),
+                                            child: Text("Stock",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold)),
                                           ),
                                         ),
                                         TableCell(
                                           verticalAlignment:
-                                              TableCellVerticalAlignment.middle,
+                                          TableCellVerticalAlignment.middle,
                                           child: Padding(
                                             padding: EdgeInsets.all(8),
-                                            child: Text(
-                                                "${variante['prix_entrer']} Ar"),
+                                            child: Text("Prix",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold)),
                                           ),
                                         ),
                                         TableCell(
                                           verticalAlignment:
-                                              TableCellVerticalAlignment.middle,
+                                          TableCellVerticalAlignment.middle,
                                           child: Padding(
                                             padding: EdgeInsets.all(8),
-                                            child: ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    Colors.teal.shade400,
-                                                // Bleu-vert aquatique
-                                                foregroundColor: Colors.white,
-                                                // Couleur de l'icône
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          50), // Coins arrondis
-                                                ),
-                                                elevation:
-                                                    5, // Légère ombre pour donner du relief
-                                              ),
-                                              onPressed: () {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (context) {
-                                                    return AcheterProduit(
-                                                      id: variante[
-                                                          'id_produit'],
-                                                      nom: produit['nom'],
-                                                      lanja: variante['stock'],
-                                                      prix: variante[
-                                                          'prix_entrer'],
-                                                      items: [],
-                                                    );
-                                                  },
-                                                );
-                                              },
-                                              child: Icon(Icons.shopping_cart,
-                                                  color: Colors.white),
-                                            ),
+                                            child: Text("Acheter",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold)),
                                           ),
                                         ),
                                       ],
                                     ),
-                                ],
-                              )
-                            ],
+                                    for (var variante in variantes)
+                                      TableRow(
+                                        children: [
+                                          TableCell(
+                                            verticalAlignment:
+                                            TableCellVerticalAlignment.middle,
+                                            child: Padding(
+                                              padding: EdgeInsets.all(8),
+                                              child:
+                                              Text(variante['description']),
+                                            ),
+                                          ),
+                                          TableCell(
+                                            verticalAlignment:
+                                            TableCellVerticalAlignment.middle,
+                                            child: Padding(
+                                              padding: EdgeInsets.all(8),
+                                              child:
+                                              Text("${variante['stock']} Kg"),
+                                            ),
+                                          ),
+                                          TableCell(
+                                            verticalAlignment:
+                                            TableCellVerticalAlignment.middle,
+                                            child: Padding(
+                                              padding: EdgeInsets.all(8),
+                                              child: Text(
+                                                  "${variante['prix_entrer']} Ar"),
+                                            ),
+                                          ),
+                                          TableCell(
+                                            verticalAlignment:
+                                            TableCellVerticalAlignment.middle,
+                                            child: Padding(
+                                              padding: EdgeInsets.all(8),
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                  Colors.blue.shade400,
+                                                  // Bleu-vert aquatique
+                                                  foregroundColor: Colors.white,
+                                                  // Couleur de l'icône
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                    BorderRadius.circular(
+                                                        50), // Coins arrondis
+                                                  ),
+                                                  elevation:
+                                                  5, // Légère ombre pour donner du relief
+                                                ),
+                                                onPressed: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) {
+                                                      print("le id_produit : ${variante['id_produit']} 000000000000");
+                                                      return AcheterProduit(
+                                                        id: variante['id_produitDetail'],
+                                                        nom: produit['nom'],
+                                                        lanja: variante['stock'],
+                                                        prix: variante[
+                                                        'prix_entrer'],
+                                                        items: [], descriptionT: variante['description'],
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                                child: Icon(Icons.shopping_cart,
+                                                    color: Colors.white),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                  ],
+                                )
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
           ),
-        ),
 
-      ],
+        ],
 
+      ),
     );
 
   }
