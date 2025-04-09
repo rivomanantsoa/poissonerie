@@ -33,37 +33,47 @@ class _HistoriqueState extends State<Historique> {
 
   final ScrollController _scrollController = ScrollController();
 
-  List<Map<String, dynamic>> _getProduitQuantities(List ventes, List produits, List produitsDetails) {
+  List<Map<String, dynamic>> _getProduitQuantities(
+      List ventes, List produits, List produitsDetails) {
     Map<int, Map<String, dynamic>> produitQuantites = {};
 
     for (var vente in ventes) {
-      int idProduit = vente['id_produit'];
+      // Étape 1 : Trouver le produitDetail correspondant
+      var produitDetail = produitsDetails.firstWhere(
+            (p) => p['id_produitDetail'] == vente['id_produitDetail'],
+        orElse: () => <String, dynamic>{},
+      );
 
+      if (produitDetail.isEmpty) continue;
+
+      int idProduit = produitDetail['id_produit'];
+
+      // Étape 2 : Si le produit n’est pas encore ajouté, on le prépare
       if (!produitQuantites.containsKey(idProduit)) {
         var produit = produits.firstWhere(
               (p) => p['id_produit'] == idProduit,
-          orElse: () => {'nom': 'Inconnu',},
-        );
-        var produitDetails = produitsDetails.firstWhere(
-              (p) => p['id_produit'] == idProduit,
-          orElse: () => {'nom': 'Inconnu', 'description': ''},
+          orElse: () => {'nom': 'Inconnu'},
         );
 
         produitQuantites[idProduit] = {
           'nom': produit['nom'],
-          'description': produitDetails['description'],
+          'description': produitDetail['description'],
           'quantite': 0.0,
         };
       }
 
+      // Étape 3 : Ajouter la qualité à la quantité totale
       produitQuantites[idProduit]!['quantite'] += vente['qualite'] ?? 0.0;
     }
 
+    // Étape 4 : Retourner les produits triés par quantité décroissante
     List<Map<String, dynamic>> sortedProduits = produitQuantites.values.toList()
       ..sort((a, b) => b['quantite'].compareTo(a['quantite']));
 
     return sortedProduits;
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -85,27 +95,7 @@ class _HistoriqueState extends State<Historique> {
       padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 15),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              IconButton(
-                icon: Icon(Icons.picture_as_pdf),
-                onPressed: () {
-                  generateAndSavePDF(ventesDuJour, globalState);
-                },
-              ),
-              Text(
-                "Varotra androany",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal.shade800, // Texte blanc
-                ),
-              ),
 
-
-            ],
-          ),
           //SizedBox(height: 5),
           Expanded(
             child: FutureBuilder<void>(
@@ -135,10 +125,20 @@ class _HistoriqueState extends State<Historique> {
                           color: Colors.transparent , // Bleu océan plus clair
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Text(
-                          " - Totalin'ny lafo : ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['qualite'] ?? 0) as double)).toStringAsFixed(3)} Kg\n"
-                              " - Vola: ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['prix_total'] ?? 0) as double)).toStringAsFixed(2)} Ariary",
-                          style: TextStyle(fontSize: 18, color: Colors.teal.shade50),
+                        child: Row(
+                          children: [
+                            Text(
+                              " - Totalin'ny lafo : ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['qualite'] ?? 0) as double)).toStringAsFixed(3)} Kg\n"
+                                  " - Vola: ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['prix_total'] ?? 0) as double)).toStringAsFixed(2)} Ariary",
+                              style: TextStyle(fontSize: 18, color: Colors.teal.shade50),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.picture_as_pdf),
+                              onPressed: () {
+                                generateAndSavePDF(ventesDuJour, globalState);
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -148,12 +148,29 @@ class _HistoriqueState extends State<Historique> {
                         padding: EdgeInsets.only(top: 20),
                         itemBuilder: (context, index) {
                           final vente = ventesDuJour[index];
-                          final nomProduit = globalState.produits.firstWhere(
-                                  (produit) =>
-                              produit['id_produit'] == vente['id_produit']);
+                          // 1. Trouver le produitDetail lié à cette vente
+                          final produitDetail = globalState.produitsDetails.firstWhere(
+                                (p) => p['id_produitDetail'] == vente['id_produitDetail'],
+                            orElse: () => {},
+                          );
+
+// 2. Si trouvé, remonter au produit
+                          Map<String, dynamic> nomProduit = {'nom': 'Inconnu'};
+                          if (produitDetail != null) {
+                            final idProduit = produitDetail['id_produit'];
+                            nomProduit = globalState.produits.firstWhere(
+                                  (p) => p['id_produit'] == idProduit,
+                              orElse: () => {'nom': 'Inconnu'},
+                            );
+                          }
+
+// Tu peux ensuite utiliser :
+                          print("Nom : ${nomProduit['nom']}");
+                          print("Description : ${produitDetail?['description'] ?? ''}");
+
                           final descriptionProduit = globalState.produitsDetails.firstWhere(
                                   (produit) =>
-                              produit['id_produit'] == vente['id_produit']);
+                              produit['id_produitDetail'] == vente['id_produitDetail']);
                           final lanja = (vente['qualite'] * 1000).toStringAsFixed(3);
                           final dateT = DateTime.parse(vente['date']);
                           return Card(

@@ -23,6 +23,7 @@ class _AjouterProduitState extends State<AjouterProduit> {
   late TextEditingController _prixvente = TextEditingController();
 
   String? selectedType;
+  String? selectedGroup;
   DateTime? selectedDate;
 
 
@@ -95,6 +96,7 @@ class _AjouterProduitState extends State<AjouterProduit> {
       DateTime date_fin = selectedDate ?? DateTime.now();
       String? statut = "En cours";
       String description = selectedType!;
+      String group = selectedGroup!;
       double prixvente = double.tryParse(_prixvente.text.isNotEmpty ? _prixvente.text : "0.0") ?? 0.0;
       double stock = double.tryParse(_taux.text.isNotEmpty ? _taux.text : "0.0") ?? 0.0;
 
@@ -206,7 +208,8 @@ class _AjouterProduitState extends State<AjouterProduit> {
             print("📌 Nouveau produit, insertion en cours...");
             int id = await globalState.addProduit(
               nom: nom,
-              id_vente: 0,
+              genre : group,
+
             );
             print("✅ Produit ajouté avec ID : $id");
 
@@ -219,6 +222,7 @@ class _AjouterProduitState extends State<AjouterProduit> {
               date_fin: date_fin.toIso8601String(),
               description: description,
               id: id,
+            id_vente: 0,
             );
             await globalState.addHistorique(prix_achat: prix_unitaire, prix_vente: prixvente, date: date_debut.toIso8601String(),
                 qualite: stock, id: id, id_detail: id_detail);
@@ -235,6 +239,7 @@ class _AjouterProduitState extends State<AjouterProduit> {
               date_fin: date_fin.toIso8601String(),
               description: description,
               id: test2.first['id_produit'],
+            id_vente: 0,
             );
           await globalState.addHistorique(prix_achat: prix_unitaire, prix_vente: prixvente, date: date_debut.toIso8601String(),
               qualite: stock, id: id, id_detail: id_detail);
@@ -396,6 +401,30 @@ class _AjouterProduitState extends State<AjouterProduit> {
                       },
                       validator: (value) => value == null || value.isEmpty ? "Misafidina sokajy" : null,
                       items: <String>['Madinika', 'Antoniny', 'Vaventy', 'Vaventy Be']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value, style: TextStyle(color: Colors.green)),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: DropdownButtonFormField<String>(
+                      style: TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                      value: selectedGroup,
+                      hint: const Text("...Group...", style: TextStyle(color: Colors.white)),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedGroup = newValue;
+                        });
+                      },
+                      validator: (value) => value == null || value.isEmpty ? "Selectionnez Group" : null,
+                      items: <String>['Crustacés', 'Mollusques', 'Poissons', 'Autre...']
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,

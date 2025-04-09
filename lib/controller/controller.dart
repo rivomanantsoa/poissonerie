@@ -19,8 +19,7 @@ class Controller extends ChangeNotifier {
           CREATE TABLE Produit (
             id_produit INTEGER PRIMARY KEY AUTOINCREMENT,
             nom TEXT NOT NULL,
-            id_vente INTEGER NOT NULL,
-            FOREIGN KEY (id_vente) REFERENCES Vente (id_vente) ON DELETE CASCADE  
+            genre TEXT NOT NULL
           )
         ''');
         await db.execute('''
@@ -34,6 +33,8 @@ class Controller extends ChangeNotifier {
             date_fin TEXT NOT NULL,
             description TEXT NOT NULL,
             id_produit INTEGER NOT NULL,
+            id_vente INTEGER NOT NULL,
+            FOREIGN KEY (id_vente) REFERENCES Vente (id_vente) ON DELETE CASCADE,
             FOREIGN KEY (id_produit) REFERENCES Produit (id_produit) ON DELETE CASCADE
           )
         ''');
@@ -69,9 +70,9 @@ class Controller extends ChangeNotifier {
             qualite REAL,
             prix_total REAL,
             date TEXT NOT NULL,
-            id_produit INTEGER NOT NULL,
+            id_produitDetail INTEGER NOT NULL,
             id_ticket INTEGER NOT NULL,
-            FOREIGN KEY (id_produit) REFERENCES Produit (id_produit) ON DELETE CASCADE,
+            FOREIGN KEY (id_produitDetail) REFERENCES ProduitDetail (id_produitDetail) ON DELETE CASCADE,
             FOREIGN KEY (id_ticket) REFERENCES Ticket (id_ticket) ON DELETE CASCADE
           )
         ''');
@@ -105,12 +106,13 @@ class Controller extends ChangeNotifier {
   // Ajouter un produit
   Future<int> addProduit({
     required String nom,
-    required int id_vente,
+    required String genre,
 
   }) async {
   int id =  await _db.insert('Produit', {
       'nom': nom,
-       'id_vente': id_vente,
+    'genre': genre,
+
     });
 
     print("ID du produit inséré : ");
@@ -125,7 +127,7 @@ class Controller extends ChangeNotifier {
   }
 
   Future<void> loadId() async {
-    rapports = await _db.query('Rapport');
+    ticktes = await _db.query('Ticket');
     print("📌 Produits chargés : $required");
     notifyListeners();
   }
@@ -136,10 +138,12 @@ class Controller extends ChangeNotifier {
     required int id_vente,
     required int id_produit,
 
+
   }) async {
     int id =  await _db.insert('Produit', {
       'id_vente': id_vente,
       'id_produit' : id_produit,
+
     });
 
     print("ID du produit inséré : ");
@@ -237,6 +241,7 @@ class Controller extends ChangeNotifier {
     required String date_fin,
     required String description,
     required int id,
+    required int id_vente,
   }) async {
    int idt = await _db.insert('ProduitDetail', {
       'prix_unitaire' : prix_unitaire,
@@ -247,6 +252,7 @@ class Controller extends ChangeNotifier {
       'date_fin' : date_fin,
      'description' : description,
      'id_produit' : id,
+     'id_vente' : id_vente,
     });
     print("dans contrroler les produits sont: $idt");
     await loadProduitsDetails();
@@ -254,13 +260,29 @@ return idt;
   }
   Future<void> updateProduitDetailsK({
     required int id,
-    required double stock,
+    required double stock, required String status,
 
   }) async {
     await _db.update(
       'ProduitDetail',
       {
         'stock': stock,
+        'statut' : status,
+      },
+      where: 'id_produitDetail = ?',
+      whereArgs: [id],
+    );
+    await loadProduitsDetails();
+  }
+  Future<void> updateProduitDetailsStatut({
+    required int id,
+    required String status,
+
+  }) async {
+    await _db.update(
+      'ProduitDetail',
+      {
+        'statut' : status,
       },
       where: 'id_produitDetail = ?',
       whereArgs: [id],
@@ -380,7 +402,7 @@ return idt;
       'qualite': qualite,
       'prix_total': prixTotal,
       'date': date,
-      'id_produit': idProduit,
+      'id_produitDetail': idProduit,
       'id_ticket': id_ticket,
     });
   await id_vente;
@@ -411,6 +433,22 @@ return idt;
         'prix_total': prixTotal,
         'date': date,
         'id_produit': idProduit,
+      },
+      where: 'id_vente = ?',
+      whereArgs: [id],
+    );
+    await loadVentes();
+  }
+
+  Future<void> updateVenteIdTicket({
+    required int id,
+
+    required int idTicket,
+  }) async {
+    await _db.update(
+      'Vente',
+      {
+        'id_ticket': idTicket,
       },
       where: 'id_vente = ?',
       whereArgs: [id],

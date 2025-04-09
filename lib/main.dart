@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/controller/controller.dart';
+import 'package:untitled/new/home_screen.dart';
+import 'package:untitled/new/horizontal_scrollable_menu.dart';
 import 'package:untitled/page/menu.dart';
 import 'package:untitled/page/principale.dart';
 import 'package:untitled/page/video.dart';
@@ -50,7 +52,9 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: Principale(),
+
+     home: Principale(),
+    // home: HorizontalScrollableMenu(),
     );
   }
 }

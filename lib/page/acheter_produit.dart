@@ -70,7 +70,7 @@ bool isChecked = false;
             (item) => item['description'] == widget.descriptionT,
         orElse: () => {'stock': 0, 'prix_entrer': 0.0},
       );
-      final id = finds['id_produit'];
+      final id = finds['id_produitDetail'];
       final idB = widget.items.length > 1 ? id : id;
       final vidinyB = widget.items.length > 1 ? vidiny : prix_payer;
       print("vidiny be 00000000 $vidinyB");
@@ -128,13 +128,12 @@ bool isChecked = false;
           },
         );
         try {
-          int  id_ticket = await
-          globalState.addTicket(reste: 0, montant: prix_payer, date: date_debut.toIso8601String(), paiement: "Cash");
+
      int  id_vente =   await globalState.addVente(
               qualite: quantite,
               prixTotal: prix_payer,
               date: date_debut.toIso8601String(),
-              idProduit: idB, id_ticket: id_ticket);
+              idProduit: idB, id_ticket: 0);
      print("le id_vente dans le globale: ${globalState.id_vente}**********");
      if( globalState.id_vente == 0 ){
       await globalState.ajouterId(id_v: id_vente);
@@ -147,14 +146,13 @@ bool isChecked = false;
           );
      print("le idf ${idF}***9*9*9*");
 
-
           int? id = idF.isNotEmpty ? int.tryParse(idF['id_produitDetail'].toString()) : widget.id;  // S'assurer que 'id_produit' est bien converti en int
           double newStock = idF.isNotEmpty ? idF['stock'] - quantite : widget.lanja - quantite;
           print("fit avec success $newStock");
 // Vérifier si 'id' est valide avant de l'utiliser
           if (id != null) {
             print("tafiditra ato indray ary isiak 9999999999999999");
-            await globalState.updateProduitDetailsK(id: id, stock:newStock);
+            await globalState.updateProduitDetailsK(id: id, stock:newStock, status : "achat");
           } else {
             print('ID invalide, mise à jour annulée');
           }

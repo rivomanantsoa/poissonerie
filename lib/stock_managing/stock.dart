@@ -53,8 +53,6 @@ class _StockState extends State<Stock> {
     }).toList();
     setState(() {
 
-
-
       // Tri basé sur le nom du produit
       filteredProduitsDetails.sort((a, b) {
         final produitA = produits.firstWhere(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/controller/controller.dart';
+import 'package:untitled/stock_managing/stock.dart';
 
 class Graph extends StatefulWidget {
   @override
@@ -152,7 +153,22 @@ class _GraphState extends State<Graph> {
             ),
           ],
         ),
+
       ),
+      floatingActionButton:
+
+      FloatingActionButton(
+
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Stock()),
+          );
+        },
+        child: Icon(Icons.storage_outlined), // Icône de graphique
+        backgroundColor: Colors.blue, // Couleur du bouton
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
     );
   }
 }
