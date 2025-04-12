@@ -24,20 +24,28 @@ class _VideoState extends State<Video> with SingleTickerProviderStateMixin {
   }
 
   bool showMenu = false;
+  double get menuTopPosition => showMenu ? -8 : -200; // 70 si visible, -200 si caché
 
   @override
   Widget build(BuildContext context) {
     final globalState = Provider.of<Controller>(context);
 
     return Scaffold(
-      backgroundColor: Colors.blueGrey,
+      backgroundColor: Colors.white,
 
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(
             Icons.home,
-            color: Colors.black,
+            color: Colors.white,
             size: 40,
+            shadows: [
+              Shadow(
+                blurRadius: 4.0,
+                color: Colors.black.withOpacity(0.5),
+                offset: Offset(2.0, 2.0),
+              ),
+            ],
           ),
           onPressed: () {
             Navigator.push(
@@ -46,25 +54,47 @@ class _VideoState extends State<Video> with SingleTickerProviderStateMixin {
             );
           }, // ou Navigator.pop(context), selon ton besoin
         ),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              _currentIndex == 0 ? 'Vente' : 'Historique',
-              style: TextStyle(fontSize: 35, fontWeight: FontWeight.w500),
+        title: Text(
+          _currentIndex == 0 ? 'Vente' : 'Historique',
+          style: TextStyle(fontSize: 35, fontWeight: FontWeight.w500, color: Colors.white, shadows: [
+            Shadow(
+              blurRadius: 4.0,
+              color: Colors.black.withOpacity(0.5),
+              offset: Offset(2.0, 2.0),
             ),
-            IconButton(
-                icon:!showMenu ? Icon(Icons.menu, color: Colors.black, size: 40) : Icon(Icons.playlist_remove_sharp, color: Colors.black, size: 40),
-                onPressed: () {
-                  setState(() {
-                    showMenu = !showMenu;
-                  });
-                }),
-          ],
+          ],),
         ),
-        backgroundColor: Colors.white,
         centerTitle: true,
+        backgroundColor: Colors.blue.shade600,
+        actions: [
+          IconButton(
+          icon: !showMenu
+              ? Icon(Icons.menu, color: Colors.white, size: 40,
+            shadows: [
+            Shadow(
+              blurRadius: 4.0,
+              color: Colors.black.withOpacity(0.5),
+              offset: Offset(2.0, 2.0),
+            ),
+          ],)
+              : Icon(Icons.playlist_remove_sharp, color: Colors.black, size: 40, shadows: [
+            Shadow(
+              blurRadius: 4.0,
+              color: Colors.blue.withOpacity(0.5),
+              offset: Offset(2.0, 2.0),
+            ),
+          ],),
+
+          onPressed: () {
+            setState(() {
+              showMenu = !showMenu;
+            });
+          },
+
+        ),
+        ],
       ),
+
       body: Stack(
         children: [
           Positioned.fill(
@@ -78,74 +108,114 @@ class _VideoState extends State<Video> with SingleTickerProviderStateMixin {
           ),
           // Bouton à gauche (inchangé)
           if (showMenu)
-            Positioned(
-              top: 20,
-              left: 60,
-              right: 60,
+            AnimatedPositioned(
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              top: menuTopPosition,
+              // dynamique
+              right: 6,
               child: Material(
                 color: Colors.transparent,
                 child: Container(
-                  width: 250,
+                  width: 50,
                   decoration: BoxDecoration(
-                    color: Colors.blueGrey,
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: Colors.black, width: 2),
+                    color: Colors.blue.shade600,
+                    borderRadius: BorderRadius.circular(5),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black,
-                        blurRadius: 8,
-                        offset: Offset(0, 3),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
                       ),
                     ],
+                    border: Border.all(color: Colors.black, width: 1),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  padding: EdgeInsets.symmetric(vertical: 0, horizontal: 2),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      ElevatedButton(
-                        onPressed: () => setCurrentIndex(0),
-                        style: ElevatedButton.styleFrom(
-                          shape: CircleBorder(),
-                          padding: EdgeInsets.all(15),
-                          backgroundColor: _currentIndex == 0
-                              ? Colors.green
-                              : Colors.transparent,
-                          elevation: _currentIndex == 0 ? 5 : 0,
-                        ),
-                        child: Icon(
-                          Icons.store_mall_directory,
-                          size: 35,
-                          color:
-                              _currentIndex == 0 ? Colors.black : Colors.white,
+                      Divider(color: Colors.black,),
+                      Tooltip(
+                        message: 'Vente',
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setCurrentIndex(0);
+                            setState(() {
+                              showMenu = true;
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                           // shape: CircleBorder(),
+                            padding: EdgeInsets.all(0),
+                            backgroundColor: _currentIndex == 0
+                                ? Colors.cyanAccent.shade400
+                                : Colors.transparent,
+                            shadowColor: Colors.transparent,
+                          //  elevation: _currentIndex == 0 ? 6 : 2,
+                          ),
+                          child: Icon(
+                            Icons.store_mall_directory,
+                            size: 30,
+                            color: _currentIndex == 0
+                                ? Colors.white
+                                : Colors.black,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 4.0,
+                                color: Colors.black.withOpacity(0.5),
+                                offset: Offset(2.0, 2.0),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      ElevatedButton(
-                        onPressed: () => setCurrentIndex(1),
-                        style: ElevatedButton.styleFrom(
-                          shape: CircleBorder(),
-                          padding: EdgeInsets.all(15),
-                          backgroundColor: _currentIndex == 1
-                              ? Colors.green
-                              : Colors.transparent,
-                          elevation: _currentIndex == 1 ? 5 : 0,
-                        ),
-                        child: Icon(
-                          Icons.history,
-                          size: 35,
-                          color:
-                              _currentIndex == 1 ? Colors.black : Colors.white,
+                      Divider(color: Colors.black,),
+                      Tooltip(
+                        message: 'Historique',
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setCurrentIndex(1);
+                            setState(() {
+                             showMenu = true;
+                            });
+                          },
+
+                          style: ElevatedButton.styleFrom(
+                        //    shape: CircleBorder(),
+                            padding: EdgeInsets.all(0),
+                            backgroundColor: _currentIndex == 1
+                                ? Colors.cyanAccent.shade400
+                                : Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            //elevation: _currentIndex == 1 ? 6 : 2,
+                          ),
+                          child: Icon(
+                            Icons.history,
+                            size: 30,
+                            color: _currentIndex == 1
+                                ? Colors.white
+                                : Colors.black,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 4.0,
+                                color: Colors.black.withOpacity(0.5),
+                                offset: Offset(2.0, 2.0),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
+
+
                     ],
                   ),
                 ),
               ),
-            )
+            ),
         ],
       ),
 
       // Remplace la colonne de boutons à droite par une BottomNavigationBar
-
 
       floatingActionButton: globalState.id_vente != 0 ? SpinningFAB() : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
@@ -206,7 +276,8 @@ class _SpinningFABState extends State<SpinningFAB>
           },
           shape: CircleBorder(),
           backgroundColor: Colors.redAccent,
-          child: Icon(Icons.print, size: 25, color: Colors.white),
+          child: Icon(Icons.shopping_basket_rounded,
+              size: 25, color: Colors.white),
         ),
       ],
     );

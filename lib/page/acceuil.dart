@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/controller/controller.dart';
-import 'package:untitled/stock_managing/graph.dart';
+
 import 'acheter_produit.dart';
 
 class Acceuil extends StatefulWidget {
@@ -12,11 +12,13 @@ class Acceuil extends StatefulWidget {
 class _AcceuilState extends State<Acceuil> {
   final TextEditingController searchController = TextEditingController();
   late Future<void> _loadDataFuture;
+  late PageController _pageController = PageController(initialPage: 0);
 
   @override
   void initState() {
     super.initState();
     _loadDataFuture = _loadData();
+    _pageController = PageController(initialPage: 0);
   }
 
   Future<void> _loadData() async {
@@ -43,8 +45,8 @@ class _AcceuilState extends State<Acceuil> {
 
     return 'assets/image/carpe.png'; // Image par défaut si rien ne matche
   }
-  String selectedGroup = 'Poissons';
 
+  String selectedGroup = 'Poissons';
 
   @override
   Widget build(BuildContext context) {
@@ -55,83 +57,97 @@ class _AcceuilState extends State<Acceuil> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-        SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: ['Poissons', 'Crustacés', 'Mollusques'].map((group) {
-            final isSelected = selectedGroup == group;
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedGroup = group;
-                });
-              },
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isSelected ? Colors.blue : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.blue),
-                ),
-                child: Text(
-                  group,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.blue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: ['Poissons', 'Crustacés', 'Mollusques'].map((group) {
+                final isSelected = selectedGroup == group;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedGroup = group;
+                      _pageController.animateToPage(
+                        ['Poissons', 'Crustacés', 'Mollusques'].indexOf(group),
+                        duration: Duration(milliseconds: 2000),
+                        curve: Curves.easeInOut,
+                      );
+                    });
+                  },
+                  child: Container(
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Color(0xFF0288D1) : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Color(0xFF0288D1)),
+                    ),
+                    child: Text(
+                      group,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Color(0xFF0288D1),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
 
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
 
           Padding(
-            padding: const EdgeInsets.only(top: 10, left: 80, right: 80),
+            padding: const EdgeInsets.only(top: 5, left: 80, right: 80),
             child: TextField(
               controller: searchController,
               decoration: InputDecoration(
                 hintText: "Recherche...",
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
                 filled: true,
-                fillColor: Colors.white,
-                prefixIcon: Icon(Icons.search),
+                fillColor: Color(0xffF1FfEf),
+                prefixIcon: Icon(Icons.search, color: Colors.grey),
               ),
+
               onChanged: (value) {
                 setState(() {});
               },
             ),
           ),
+
+          /// Partie qui peux etre scrollable pour afficher la group suivant
           Expanded(
-            child: FutureBuilder<void>(
-              future: _loadDataFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
+            child: PageView.builder(
+              controller: _pageController,
+              scrollDirection: Axis.horizontal,
+              onPageChanged: (index) {
+                setState(() {
+                  selectedGroup =
+                      ['Poissons', 'Crustacés', 'Mollusques'][index];
+                });
+              },
+              itemCount: 3,
+              // Nombre de groupes
+              itemBuilder: (context, index) {
+                final group = ['Poissons', 'Crustacés', 'Mollusques'][index];
 
                 List filteredProduits = globalState.produits
                     .where((produit) =>
-                produit['nom']
-                    .toLowerCase()
-                    .contains(searchController.text.toLowerCase()) &&
-                    produit['genre'].toString().toLowerCase() ==
-                        selectedGroup.toLowerCase())
+                        produit['nom']
+                            .toLowerCase()
+                            .contains(searchController.text.toLowerCase()) &&
+                        produit['genre'].toString().toLowerCase() ==
+                            group.toLowerCase())
                     .toList();
 
-
-                // Tri par ordre alphabétique
                 filteredProduits.sort((a, b) => a['nom'].compareTo(b['nom']));
 
                 if (filteredProduits.isEmpty) {
-                  return Center(child: Text("Aucun produit trouvé"));
+                  return Center(
+                      child: Text("Aucun produit trouvé dans $group"));
                 }
-
-                String?
-                    lastInitial; // Variable pour stocker la première lettre précédente
+                String? lastInitial;
 
                 return ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -149,117 +165,76 @@ class _AcceuilState extends State<Acceuil> {
                         currentInitial; // Mettre à jour la dernière initiale traitée
 
                     return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (showHeader) // Affiche la première lettre si elle change
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 10),
-                            child: Text(
-                              currentInitial,
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (showHeader) // Affiche la première lettre si elle change
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 10),
+                              child: Text(
+                                currentInitial,
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue.shade600,
+                                ),
                               ),
                             ),
-                          ),
-                        Card(
-                          color: Colors.white54,
-                          elevation: 3,
-                          margin: EdgeInsets.symmetric(vertical: 8),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Transform.scale(
-                                      scale:2,
-                                      child: CircleAvatar(
-                                        radius: 20,
-                                        backgroundColor: Colors.transparent,
-                                        backgroundImage: AssetImage(
-                                            getImageForProduct(produit['nom'])),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 40),
-                                    Expanded(
-                                      child: Text(
-                                        produit['nom'],
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,color: Colors.blueAccent
+                          Card(
+                            color:  Colors.blue.shade600,//Color(0xFFF1F8E9),
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+
+                            margin: EdgeInsets.symmetric(vertical: 8),
+
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Transform.scale(
+                                        scale: 2,
+                                        child: CircleAvatar(
+                                          radius: 20,
+                                          backgroundColor: Colors.transparent,
+                                          backgroundImage: AssetImage(
+                                              getImageForProduct(
+                                                  produit['nom'])),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 10),
-                                Table(
-                                  border: TableBorder.all(color: Colors.grey),
-                                  columnWidths: {
-                                    0: FlexColumnWidth(1),
-                                    1: FlexColumnWidth(1),
-                                    2: FlexColumnWidth(1),
-                                    3: FlexColumnWidth(1),
-                                  },
-                                  children: [
-                                    TableRow(
-                                      decoration: BoxDecoration(
-                                          color: Colors.grey[200]),
-                                      children: [
-                                        TableCell(
-                                          verticalAlignment:
-                                              TableCellVerticalAlignment.middle,
-                                          child: Padding(
-                                            padding: EdgeInsets.all(8),
-                                            child: Text("Variante",
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
+                                      const SizedBox(width: 60, ),
+                                      Expanded(
+                                        child: Text(
+                                          produit['nom'],
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
                                           ),
+
                                         ),
-                                        TableCell(
-                                          verticalAlignment:
-                                              TableCellVerticalAlignment.middle,
-                                          child: Padding(
-                                            padding: EdgeInsets.all(8),
-                                            child: Text("Stock",
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                          ),
-                                        ),
-                                        TableCell(
-                                          verticalAlignment:
-                                              TableCellVerticalAlignment.middle,
-                                          child: Padding(
-                                            padding: EdgeInsets.all(8),
-                                            child: Text("Prix",
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                          ),
-                                        ),
-                                        TableCell(
-                                          verticalAlignment:
-                                              TableCellVerticalAlignment.middle,
-                                          child: Padding(
-                                            padding: EdgeInsets.all(8),
-                                            child: Text("Acheter",
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    for (var variante in variantes)
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 10),
+                                  Table(
+                                    border: TableBorder.all(color: Colors.white),
+                                    columnWidths: {
+                                      0: FlexColumnWidth(1),
+                                      1: FlexColumnWidth(1),
+                                      2: FlexColumnWidth(1),
+                                      3: FlexColumnWidth(1),
+                                    },
+                                    children: [
                                       TableRow(
+                                        decoration: BoxDecoration(
+                                          color: Color(0xFFB3E5FC),
+                                        ),
+
                                         children: [
                                           TableCell(
                                             verticalAlignment:
@@ -267,8 +242,10 @@ class _AcceuilState extends State<Acceuil> {
                                                     .middle,
                                             child: Padding(
                                               padding: EdgeInsets.all(8),
-                                              child:
-                                                  Text(variante['description']),
+                                              child: Text("Variante",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                             ),
                                           ),
                                           TableCell(
@@ -277,8 +254,10 @@ class _AcceuilState extends State<Acceuil> {
                                                     .middle,
                                             child: Padding(
                                               padding: EdgeInsets.all(8),
-                                              child: Text(
-                                                  "${variante['stock']} Kg"),
+                                              child: Text("Stock",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                             ),
                                           ),
                                           TableCell(
@@ -287,8 +266,10 @@ class _AcceuilState extends State<Acceuil> {
                                                     .middle,
                                             child: Padding(
                                               padding: EdgeInsets.all(8),
-                                              child: Text(
-                                                  "${variante['prix_entrer']} Ar"),
+                                              child: Text("Prix",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                             ),
                                           ),
                                           TableCell(
@@ -296,64 +277,127 @@ class _AcceuilState extends State<Acceuil> {
                                                 TableCellVerticalAlignment
                                                     .middle,
                                             child: Padding(
-                                              padding: EdgeInsets.all(12),
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      Colors.blue.shade400,
-                                                  // Bleu-vert aquatique
-                                                  foregroundColor: Colors.white,
-                                                  // Couleur de l'icône
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            100), // Coins arrondis
-                                                  ),
-                                                  elevation:
-                                                      5, // Légère ombre pour donner du relief
-                                                ),
-                                                onPressed: () {
-                                                  showDialog(
-                                                    context: context,
-                                                    builder: (context) {
-                                                      print(
-                                                          "le id_produit : ${variante['id_produit']} 000000000000");
-                                                      return AcheterProduit(
-                                                        id: variante[
-                                                            'id_produitDetail'],
-                                                        nom: produit['nom'],
-                                                        lanja:
-                                                            variante['stock'],
-                                                        prix: variante[
-                                                            'prix_entrer'],
-                                                        items: [],
-                                                        descriptionT: variante[
-                                                            'description'],
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                                child: Icon(Icons.shopping_cart,
-                                                    color: Colors.white, size: 13,),
-                                              ),
+                                              padding: EdgeInsets.all(8),
+                                              child: Text("Acheter",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                             ),
                                           ),
                                         ],
                                       ),
-                                  ],
-                                ),
-                                SizedBox(height: 30,)
-                              ],
+                                      for (var variante in variantes)
+                                        TableRow(
+                                          children: [
+                                            TableCell(
+                                              verticalAlignment:
+                                                  TableCellVerticalAlignment
+                                                      .middle,
+                                              child: Padding(
+                                                padding: EdgeInsets.all(8),
+                                                child: Text(
+                                                    variante['description'],  style: TextStyle(color: Colors.yellowAccent, fontWeight: FontWeight.bold)),
+
+                                              ),
+                                            ),
+                                            TableCell(
+                                              verticalAlignment:
+                                                  TableCellVerticalAlignment
+                                                      .middle,
+                                              child: Padding(
+                                                padding: EdgeInsets.all(8),
+                                                child: Text(
+                                                    "${variante['stock']} Kg", style: TextStyle(color: Colors.yellowAccent, fontWeight: FontWeight.w400)),
+                                              ),
+                                            ),
+                                            TableCell(
+                                              verticalAlignment:
+                                                  TableCellVerticalAlignment
+                                                      .middle,
+                                              child: Padding(
+                                                padding: EdgeInsets.all(8),
+                                                child: Text(
+                                                    "${variante['prix_entrer']} Ar", style: TextStyle(color: Colors.yellowAccent, fontWeight: FontWeight.w400)),
+                                              ),
+                                            ),
+                                            TableCell(
+                                              verticalAlignment:
+                                                  TableCellVerticalAlignment
+                                                      .middle,
+                                              child: Padding(
+                                                padding: EdgeInsets.all(0),
+                                                child: ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.transparent,
+                                                    // Bleu-vert aquatique
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    // Couleur de l'icône
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              50), // Coins arrondis
+                                                    ),
+                                                    elevation:
+                                                        0, // Légère ombre pour donner du relief
+                                                  ),
+                                                  onPressed: () {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (context) {
+                                                        print(
+                                                            "le id_produit : ${variante['id_produit']} 000000000000");
+                                                        return AcheterProduit(
+                                                          id: variante[
+                                                              'id_produitDetail'],
+                                                          nom: produit['nom'],
+                                                          lanja:
+                                                              variante['stock'],
+                                                          prix: variante[
+                                                              'prix_entrer'],
+
+                                                          items: [],
+                                                          descriptionT: variante[
+                                                              'description'],
+                                                        );
+                                                      },
+                                                    );
+                                                  },
+                                                  child: Icon(
+                                                    Icons.shopping_cart,
+                                                    color: Colors.white,
+                                                    size: 30,
+                                                    shadows: [
+                                                      Shadow(
+                                                        blurRadius: 4.0,
+                                                        color: Colors.black.withOpacity(0.5),
+                                                        offset: Offset(2.0, 2.0),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 30,
+                                  )
+                                ],
+                              ),
                             ),
-                          ),
-                        ),
-                      ],
-                    );
+                          )
+                        ]);
                   },
                 );
               },
             ),
-          ),
+          )
         ],
       ),
     );

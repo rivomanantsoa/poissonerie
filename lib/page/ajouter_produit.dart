@@ -1,6 +1,6 @@
 import 'package:untitled/controller/controller.dart';
 import 'package:flutter/material.dart';
-import 'package:date_field/date_field.dart';
+
 import 'package:provider/provider.dart';
 
 class AjouterProduit extends StatefulWidget {
@@ -49,9 +49,7 @@ class _AjouterProduitState extends State<AjouterProduit> {
     super.dispose();
   }
 
-  void _cancel() {
-    Navigator.pop(context);
-  }
+
   bool isLoading = false;
   Future<bool> showConfirmationDialog(BuildContext context, String nom, String description, double prixUnitaire, double prixVente, double stock) async {
     bool? confirmation = await showDialog(
@@ -160,14 +158,14 @@ class _AjouterProduitState extends State<AjouterProduit> {
         orElse: () => {},
       );
 
-      if (idProduit == null) {
+      if (idProduit.isEmpty) {
         print("❌ Aucune correspondance trouvée pour le produit '$nom'");
       } else {
         print("✅ Produit trouvé: $idProduit");
       }
 
-      final id = idProduit?['id_produit'];
-      final produitNom = idProduit?['nom'] ?? 'Inconnu';
+      final id = idProduit['id_produit'];
+      final produitNom = idProduit['nom'] ?? 'Inconnu';
 
       print("🔎 ID Produit: $id, Nom Produit: $produitNom");
       print("🔎 Recherche avec - Nom: $nom, Description: $description");
@@ -196,7 +194,7 @@ class _AjouterProduitState extends State<AjouterProduit> {
       }
 
       double sommeStock = globalState.produitsDetails
-          .where((detailProduit) => detailProduit['id_produit'] == idProduit?['id_produit']
+          .where((detailProduit) => detailProduit['id_produit'] == idProduit['id_produit']
           && produitNom == nom && detailProduit['description'] == description)
           .fold(0, (somme, detailProduit) => somme + detailProduit['stock']);
 
@@ -325,7 +323,7 @@ class _AjouterProduitState extends State<AjouterProduit> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         title: Center(
           child: Text(
-            "Mampiditra Vokatra",
+            "Enregistrer un produit",
             style: TextStyle(color: Colors.white),
           ),
         ),
@@ -358,18 +356,18 @@ class _AjouterProduitState extends State<AjouterProduit> {
                       style: TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        labelText: '...Ananarana...',
+                        labelText: '...Nom...',
                         labelStyle: TextStyle(color: Colors.white),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return "Hamarino ny anarana";
+                          return "Veuillez Remplir!";
                         }
 
                         // Vérifie la présence de caractères spéciaux
                         final RegExp regex = RegExp(r"^[a-zA-ZÀ-ÿ\s]+$");
                         if (!regex.hasMatch(value.trim())) {
-                          return "Tsy azo atao ny mampiditra mari-panavahana";
+                          return "Nom invalide";
                         }
 
                         return null;
@@ -393,14 +391,14 @@ class _AjouterProduitState extends State<AjouterProduit> {
                         border: OutlineInputBorder(),
                       ),
                       value: selectedType,
-                      hint: const Text("...Sokajy...", style: TextStyle(color: Colors.white)),
+                      hint: const Text("...Description...", style: TextStyle(color: Colors.white)),
                       onChanged: (String? newValue) {
                         setState(() {
                           selectedType = newValue;
                         });
                       },
-                      validator: (value) => value == null || value.isEmpty ? "Misafidina sokajy" : null,
-                      items: <String>['Madinika', 'Antoniny', 'Vaventy', 'Vaventy Be']
+                      validator: (value) => value == null || value.isEmpty ? "Choissir un description" : null,
+                      items: <String>['Petit calibre', 'Calibre moyen', 'Gros calibre', 'Très gros calibre']
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
@@ -417,7 +415,7 @@ class _AjouterProduitState extends State<AjouterProduit> {
                         border: OutlineInputBorder(),
                       ),
                       value: selectedGroup,
-                      hint: const Text("...Group...", style: TextStyle(color: Colors.white)),
+                      hint: const Text("...Groupe...", style: TextStyle(color: Colors.white)),
                       onChanged: (String? newValue) {
                         setState(() {
                           selectedGroup = newValue;
@@ -444,12 +442,12 @@ class _AjouterProduitState extends State<AjouterProduit> {
                       style: TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        labelText: '...Nakana ny kilao...',
+                        labelText: '...Prix Achat...',
                         labelStyle: TextStyle(color: Colors.white),
                         suffixText: "Ariary",
                       ),
                       keyboardType: TextInputType.number,
-                      validator: (value) => value == null || value.isEmpty ? "Hamarino ny volanao" : null,
+                      validator: (value) => value == null || value.isEmpty ? "Veuillez vérifier" : null,
                     ),
                   ),
                   Padding(
@@ -459,12 +457,12 @@ class _AjouterProduitState extends State<AjouterProduit> {
                       style: TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        labelText: '...Hivarotana ny kilao...',
+                        labelText: '...Prix Vente...',
                         labelStyle: TextStyle(color: Colors.white),
                         suffixText: "Ariary",
                       ),
                       keyboardType: TextInputType.number,
-                      validator: (value) => value == null || value.isEmpty ? "Hamarino ny volanao" : null,
+                      validator: (value) => value == null || value.isEmpty ? "Veuillez vérifier" : null,
                     ),
                   ),
                   Padding(
@@ -474,12 +472,12 @@ class _AjouterProduitState extends State<AjouterProduit> {
                       style: TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        labelText: '...Lanja Amidy...',
+                        labelText: '...Stock à vendre...',
                         labelStyle: TextStyle(color: Colors.white),
                         suffixText: "Kg",
                       ),
                       keyboardType: TextInputType.number,
-                      validator: (value) => value == null || value.isEmpty ? "Hamarino ny lanjaa" : null,
+                      validator: (value) => value == null || value.isEmpty ? "Veuillez vérifier" : null,
                     ),
                   ),
                 ],
@@ -497,7 +495,7 @@ class _AjouterProduitState extends State<AjouterProduit> {
                   onPressed: () => Navigator.of(context).pop(),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
                   child: const Text(
-                    'Hanafoana',
+                    'Annuller',
                     style: TextStyle(color: Colors.redAccent),
                   ),
                 ),
@@ -509,7 +507,7 @@ class _AjouterProduitState extends State<AjouterProduit> {
                       });
                     }
                   },
-                  child: const Text('Manaraka'),
+                  child: const Text('Enregistrer'),
                 ),
               ],
             ),
@@ -519,7 +517,7 @@ class _AjouterProduitState extends State<AjouterProduit> {
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text(
-                'Hanafoana',
+                'Annuller',
                 style: TextStyle(color: Colors.redAccent),
               ),
             ),
@@ -528,7 +526,7 @@ class _AjouterProduitState extends State<AjouterProduit> {
                 FocusScope.of(context).unfocus(); // Masquer le clavier
                 _submit(globalState);
               },
-              child: const Text('Handefa'),
+              child: const Text('Valider'),
             ),
           ],
         ],

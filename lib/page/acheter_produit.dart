@@ -255,17 +255,25 @@ bool isChecked = false;
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         title: Center(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Hividy ${widget.nom}",
-                style: TextStyle(color: Colors.white),
+              Center(
+                child: Text(
+                  "Acheter",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
               Text(
-                "Azo vidina ${(affichageLanja)} kg",
+                "- ${widget.nom} : ${widget.descriptionT}",
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+              Text(
+                "- Stock : ${(affichageLanja)} kg",
                 style: TextStyle(color: Colors.green, fontSize: 13),
               ),
               Text(
-                "$affichageVidiny Ar/Kg",
+                "- Prix par Kilos : $affichageVidiny Ar/Kg",
                 style: TextStyle(color: Colors.blue, fontSize: 13),
               ),
             ],
@@ -287,7 +295,7 @@ bool isChecked = false;
                     },
                   ),
                   const Text(
-                    'Hampiditra vola',
+                    "Payer de l'argent",
                     style: TextStyle(color: Colors.white),
                   ),
                 ],
@@ -343,14 +351,14 @@ bool isChecked = false;
                     decoration: const InputDecoration(
                       fillColor: Colors.white,
                       border: OutlineInputBorder(),
-                      labelText: 'Andoha vola',
+                      labelText: "Momant : 1234 Ar",
                       labelStyle: TextStyle(color: Colors.white),
                       suffixText: "Ariary",
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return "Hamarino ny vola";
+                        return "veuillez verifier l'argent";
                       }
                       if (isChecked) {
                         double prix = widget.items.length > 1 ?(double.tryParse(value ?? '0') ?? 0) / vidiny : (double.tryParse(value ?? '0') ?? 0) / widget.prix.toDouble();
@@ -368,7 +376,7 @@ bool isChecked = false;
                   decoration: const InputDecoration(
                     fillColor: Colors.white,
                     border: OutlineInputBorder(),
-                    labelText: 'Hampiditra lanja',
+                    labelText: 'Poids : 123 kg',
                     labelStyle: TextStyle(color: Colors.white),
                     suffixText: "Kg",
                   ),
@@ -377,7 +385,7 @@ bool isChecked = false;
 
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return "Hamarino ny lanjaa";
+                      return "Veuillez verifier le poids";
                     }
                     if (!isChecked) {
                       double prix = widget.items.length > 1 ? (double.tryParse(value ?? '0') ?? 0) * vidiny : (double.tryParse(value ?? '0') ?? 0) * widget.prix.toDouble();
@@ -395,7 +403,7 @@ bool isChecked = false;
           ElevatedButton(
             onPressed: _cancel,
             child: const Text(
-              'Hanafoana',
+              'Annuller',
               style: TextStyle(color: Colors.redAccent),
             ),
           ),
@@ -404,7 +412,7 @@ bool isChecked = false;
               FocusScope.of(context).unfocus(); // Masquer le clavier
               _submit(globalState);
             },
-            child: const Text('Handefa'),
+            child: const Text('Valider'),
           ),
         ],
       ),

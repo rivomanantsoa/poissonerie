@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/controller/controller.dart';
-import 'package:untitled/stock_managing/stock.dart';
+
 
 class Graph extends StatefulWidget {
   @override
@@ -10,6 +10,7 @@ class Graph extends StatefulWidget {
 
 class _GraphState extends State<Graph> {
   String searchQuery = "";
+
 
   @override
   Widget build(BuildContext context) {
@@ -70,9 +71,19 @@ class _GraphState extends State<Graph> {
         .toList();
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Analyse du Stock", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blue.shade900,
+        automaticallyImplyLeading: false,
+        title:  Text("Analyse du Stock", style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white, shadows: [
+          Shadow(
+            blurRadius: 4.0,
+            color: Colors.black.withOpacity(0.5),
+            offset: Offset(2.0, 2.0),
+          ),
+        ],)),
+       // backgroundColor: Colors.blue.shade900,
+        centerTitle: true,
+        backgroundColor: Colors.orange.shade600,
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -80,11 +91,14 @@ class _GraphState extends State<Graph> {
           children: [
             TextField(
               decoration: InputDecoration(
-                labelText: "Rechercher un produit",
+                hintText: "Rechercher un produit...",
                 prefixIcon: Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
+
               ),
               onChanged: (value) {
                 setState(() {
@@ -102,14 +116,14 @@ class _GraphState extends State<Graph> {
                   double pourcentage = filteredStockData[index]['pourcentage'].toDouble();
 
                   Color barColor = pourcentage == 100
-                      ? Colors.lightGreenAccent.shade400
+                      ? Colors.black
                       : (pourcentage >= 50
-                      ? Colors.amber.shade400
+                      ? Colors.blueAccent
                       : (pourcentage >= 10
                       ? Colors.yellowAccent
                       : Colors.red));
                   return Card(
-                    color: Colors.blue.shade50,
+                    color: Colors.orange.shade600,
                     elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -121,11 +135,11 @@ class _GraphState extends State<Graph> {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.inventory, color: Colors.blue.shade900),
+                              Icon(Icons.inventory, color: Colors.white),
                               SizedBox(width: 10),
                               Text(
                                 "${filteredStockData[index]['nom']} (${filteredStockData[index]['description']})",
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                style: TextStyle(fontSize: 18,color: Colors.white, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -151,24 +165,12 @@ class _GraphState extends State<Graph> {
                 },
               ),
             ),
+
           ],
         ),
 
       ),
-      floatingActionButton:
 
-      FloatingActionButton(
-
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Stock()),
-          );
-        },
-        child: Icon(Icons.storage_outlined), // Icône de graphique
-        backgroundColor: Colors.blue, // Couleur du bouton
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
     );
   }
 }

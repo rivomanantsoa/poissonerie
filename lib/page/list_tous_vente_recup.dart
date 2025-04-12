@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/controller/controller.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/date_symbol_data_local.dart';
+
 
 import 'package:intl/intl.dart'; // Pour formater la date
 
@@ -29,57 +29,6 @@ class _ListTousVenteState extends State<ListTousVente> {
     setState(() {});
   }
 
-  final ScrollController _scrollController = ScrollController();
-
-  void _scrollRight() {
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent, // Aller à droite
-      duration: Duration(milliseconds: 500),
-      curve: Curves.easeOut,
-    );
-  }
-
-  void _scrollLeft() {
-    _scrollController.animateTo(
-      0.0, // Aller à gauche
-      duration: Duration(milliseconds: 500),
-      curve: Curves.easeOut,
-    );
-  }
-
-  List<Map<String, dynamic>> _getProduitQuantities(List ventes, List produits) {
-    Map<int, Map<String, dynamic>> produitQuantites = {};
-
-    print("Les produits sont : $produits");
-    print("Les ventes sont : $ventes");
-
-    for (var vente in ventes) {
-      int idProduit = vente['id_produit'];
-
-      // Vérifier si le produit est déjà ajouté
-      if (!produitQuantites.containsKey(idProduit)) {
-        var produit = produits.firstWhere(
-          (p) => p['id_produit'] == idProduit,
-          orElse: () => {'nom': 'Inconnu', 'description': ''},
-        );
-
-        produitQuantites[idProduit] = {
-          'nom': produit['nom'],
-          'description': produit['description'],
-          'quantite': 0.0, // Initialisation à 0 pour éviter le null
-        };
-      }
-
-      // Ajouter la quantité de la vente au total
-      produitQuantites[idProduit]!['quantite'] += vente['qualite'] ?? 0.0;
-    }
-
-    // Trier la liste des produits en fonction de la quantité vendue (du plus grand au plus petit)
-    List<Map<String, dynamic>> sortedProduits = produitQuantites.values.toList()
-      ..sort((a, b) => b['quantite'].compareTo(a['quantite']));
-
-    return sortedProduits;
-  }
   Map<String, List<Map<String, dynamic>>> groupVentesByDate(List<Map<String, dynamic>> ventes) {
     Map<String, List<Map<String, dynamic>>> groupedVentes = {};
 

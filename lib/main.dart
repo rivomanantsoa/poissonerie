@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/controller/controller.dart';
-import 'package:untitled/new/home_screen.dart';
-import 'package:untitled/new/horizontal_scrollable_menu.dart';
-import 'package:untitled/page/menu.dart';
+
 import 'package:untitled/page/principale.dart';
-import 'package:untitled/page/video.dart';
+
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'package:intl/intl.dart'; // Pour formater la date
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

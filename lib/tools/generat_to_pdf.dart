@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:untitled/controller/controller.dart';
 import 'package:intl/intl.dart';
-Future<void> generateAndSavePDF(List<Map<String, dynamic>> ventesDuJour, Controller globalState) async {
+Future<void> generateAndSavePDF(List<Map<String, dynamic>> ventesDuJour, Controller globalState, double beneficeTotal) async {
   final pdf = pw.Document();
 
   // Date du rapport
@@ -40,8 +40,10 @@ Future<void> generateAndSavePDF(List<Map<String, dynamic>> ventesDuJour, Control
             ),
             pw.SizedBox(height: 5),
             pw.Text(
-              "Total vendu : ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['qualite'] ?? 0) as double)).toStringAsFixed(2)} Kg\n"
-                  "Montant total : ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['prix_total'] ?? 0) as double)).toStringAsFixed(2)} Ariary",
+              "Résumé des ventes du jour\n\n"
+                  "• Total vendu      : ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['qualite'] ?? 0) as double)).toStringAsFixed(2)} Kg\n"
+                  "• Montant total    : ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['prix_total'] ?? 0) as double)).toStringAsFixed(2)} Ariary\n"
+                  "• Bénéfice total   : ${beneficeTotal.toStringAsFixed(2)} Ariary",
               style: pw.TextStyle(fontSize: 16),
             ),
             pw.SizedBox(height: 10),
@@ -50,15 +52,16 @@ Future<void> generateAndSavePDF(List<Map<String, dynamic>> ventesDuJour, Control
             pw.Table.fromTextArray(
               headers: ["Produit", "Description", "Poids (Kg)", "Prix (Ar)", "Heure"],
               data: ventesDuJour.map((vente) {
-                final produit = globalState.produits.firstWhere(
-                      (p) => p['id_produit'] == vente['id_produit'],
-                  orElse: () => {},
-                );
+
 
                 final produitDetail = globalState.produitsDetails.firstWhere(
-                      (p) => p['id_produit'] == vente['id_produit'],
+                      (p) => p['id_produitDetail'] == vente['id_produitDetail'],
                   orElse: () => {},
                 );
+                final Map<int, dynamic> mapProduits = {
+                  for (var p in globalState.produits) p['id_produit']: p
+                };
+                final produit = mapProduits[produitDetail['id_produit']];
 
                 final nomProduit = produit?['nom'] ?? "Inconnu";
                 final descriptionProduit = produitDetail?['description'] ?? "Non spécifiée";

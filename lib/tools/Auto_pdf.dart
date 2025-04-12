@@ -33,7 +33,7 @@ class _YourWidgetState extends State<YourWidget> {
 
       if (now.hour == 13 && now.minute == 57 && !_pdfGeneratedToday) {
         _pdfGeneratedToday = true; // Marquer comme exécuté aujourd'hui
-        generateAndSavePDF(ventesDuJour, globalState);
+        generateAndSavePDF(ventesDuJour, globalState, 0);
       }
 
       // Réinitialiser le flag après minuit

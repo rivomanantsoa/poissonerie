@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/analyse/gestion_de_graph.dart';
 import 'package:untitled/page/list_pdf.dart';
-import 'package:untitled/stock_managing/graph.dart';
-import 'package:untitled/stock_managing/stock.dart';
+
+import 'package:untitled/stock_managing/scaff.dart';
+
 import 'package:untitled/page/video.dart';
 
 class Principale extends StatefulWidget {
@@ -17,9 +19,15 @@ class _PrincipaleState extends State<Principale> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Gestion de Poissonnerie", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text("Gestion de Poissonnerie", style: TextStyle(fontSize:25, shadows: [
+          Shadow(
+            blurRadius: 4.0,
+            color: Colors.black.withOpacity(0.5),
+            offset: Offset(2.0, 2.0),
+          ),
+        ],)),
         centerTitle: true,
-        backgroundColor: Colors.blue.shade700,
+        //backgroundColor: Colors.blue.shade700,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -40,10 +48,10 @@ class _PrincipaleState extends State<Principale> {
             SizedBox(height: 10),
             Text(
               "Bienvenue dans votre gestionnaire",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue.shade700),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
             ),
 
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2,
@@ -53,8 +61,8 @@ class _PrincipaleState extends State<Principale> {
                 children: [
                   _buildMenuButton("Vente", Icons.store_mall_directory, Colors.blue.shade600, Video()),
                   _buildMenuButton("Rapport", Icons.chat, Colors.green.shade600, Video()),
-                  _buildMenuButton("Stock", Icons.storage_rounded, Colors.orange.shade600, Stock()),
-                  _buildMenuButton("Analyse", Icons.waterfall_chart_rounded, Colors.purple.shade600, Graph()),
+                  _buildMenuButton("Stock", Icons.storage_rounded, Colors.orange.shade600, Scaff()),
+                  _buildMenuButton("Analyse", Icons.waterfall_chart_rounded, Colors.purple.shade600, GestionDeGraph()),
                   _buildMenuButton("Fichier", Icons.file_open, Colors.red.shade600, ListPdf()),
                   _buildMenuButton("État Financier", Icons.monetization_on_rounded, Colors.teal.shade600, Video()),
                 ],
@@ -82,7 +90,13 @@ class _PrincipaleState extends State<Principale> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 30, color: Colors.white),
+          Icon(icon, size: 30, color: Colors.white, shadows: [
+            Shadow(
+              blurRadius: 4.0,
+              color: Colors.black.withOpacity(0.5),
+              offset: Offset(2.0, 2.0),
+            ),
+          ],),
           SizedBox(height: 8),
           Text(
             title,

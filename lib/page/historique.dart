@@ -15,14 +15,13 @@ class Historique extends StatefulWidget {
 class _HistoriqueState extends State<Historique> {
   late Controller globalState;
   late Future<void> _loadDataFuture = _initializeData();
-  bool _pdfGeneratedToday = false; // Évite les exécutions multiples
+  //bool _pdfGeneratedToday = false; // Évite les exécutions multiples
 
   @override
   void initState() {
     super.initState();
     globalState = Provider.of<Controller>(context, listen: false);
     _loadDataFuture = _initializeData();
-
   }
 
   Future<void> _initializeData() async {
@@ -30,61 +29,36 @@ class _HistoriqueState extends State<Historique> {
     setState(() {});
   }
 
-
-  final ScrollController _scrollController = ScrollController();
-
-  List<Map<String, dynamic>> _getProduitQuantities(
-      List ventes, List produits, List produitsDetails) {
-    Map<int, Map<String, dynamic>> produitQuantites = {};
-
-    for (var vente in ventes) {
-      // Étape 1 : Trouver le produitDetail correspondant
-      var produitDetail = produitsDetails.firstWhere(
-            (p) => p['id_produitDetail'] == vente['id_produitDetail'],
-        orElse: () => <String, dynamic>{},
-      );
-
-      if (produitDetail.isEmpty) continue;
-
-      int idProduit = produitDetail['id_produit'];
-
-      // Étape 2 : Si le produit n’est pas encore ajouté, on le prépare
-      if (!produitQuantites.containsKey(idProduit)) {
-        var produit = produits.firstWhere(
-              (p) => p['id_produit'] == idProduit,
-          orElse: () => {'nom': 'Inconnu'},
-        );
-
-        produitQuantites[idProduit] = {
-          'nom': produit['nom'],
-          'description': produitDetail['description'],
-          'quantite': 0.0,
-        };
-      }
-
-      // Étape 3 : Ajouter la qualité à la quantité totale
-      produitQuantites[idProduit]!['quantite'] += vente['qualite'] ?? 0.0;
-    }
-
-    // Étape 4 : Retourner les produits triés par quantité décroissante
-    List<Map<String, dynamic>> sortedProduits = produitQuantites.values.toList()
-      ..sort((a, b) => b['quantite'].compareTo(a['quantite']));
-
-    return sortedProduits;
-  }
-
-
-
   @override
   Widget build(BuildContext context) {
     final globalState = Provider.of<Controller>(context);
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     var ventesDuJour = globalState.ventes.where((vente) {
       DateTime venteDate = DateTime.parse(vente['date']);
-      String venteDateFormatted =
-      DateFormat('yyyy-MM-dd').format(venteDate);
+      String venteDateFormatted = DateFormat('yyyy-MM-dd').format(venteDate);
       return venteDateFormatted == today;
     }).toList();
+
+    double beneficeTotal = 0.0;
+
+    for (var vente in ventesDuJour) {
+      // On récupère le produitDetail correspondant à cette vente
+      var produitDetail = globalState.produitsDetails.firstWhere(
+        (p) => p['id_produitDetail'] == vente['id_produitDetail'],
+        orElse: () => {},
+      );
+
+      if (produitDetail.isNotEmpty) {
+        double prixAchat = produitDetail['prix_unitaire'];
+        double prixVente = produitDetail['prix_entrer'];
+        double quantiteVendue = vente['qualite'];
+
+        double benefice = (prixVente - prixAchat) * quantiteVendue;
+        beneficeTotal += benefice;
+      }
+    }
+
+    print('Bénéfice total du jour : $beneficeTotal Ar');
 
     ventesDuJour.sort((a, b) {
       DateTime dateA = DateTime.parse(a['date']);
@@ -92,10 +66,9 @@ class _HistoriqueState extends State<Historique> {
       return dateB.compareTo(dateA);
     });
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 15),
       child: Column(
         children: [
-
           //SizedBox(height: 5),
           Expanded(
             child: FutureBuilder<void>(
@@ -105,8 +78,6 @@ class _HistoriqueState extends State<Historique> {
                   return Center(child: CircularProgressIndicator());
                 }
 
-
-
                 if (ventesDuJour.isEmpty) {
                   return Center(
                       child: Text("Aucune vente aujourd'hui",
@@ -115,83 +86,144 @@ class _HistoriqueState extends State<Historique> {
                 }
 
                 return Column(
-                  //mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Center(
+                      child: Text(
+                        "Aujourd'hui : ${DateFormat("dd MMMM  yyyy", "fr_FR").format(DateTime.parse(today))}",
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.blue.shade600),
+                      ),
+                    ),
                     Padding(
-                      padding: const EdgeInsets.only(left: 0),
+                      padding: const EdgeInsets.only(left: 0, bottom: 0),
                       child: Container(
                         padding: EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.transparent , // Bleu océan plus clair
+                          color: Colors.transparent, // Bleu océan plus clair
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Row(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              " - Totalin'ny lafo : ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['qualite'] ?? 0) as double)).toStringAsFixed(3)} Kg\n"
-                                  " - Vola: ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['prix_total'] ?? 0) as double)).toStringAsFixed(2)} Ariary",
-                              style: TextStyle(fontSize: 18, color: Colors.teal.shade50),
+                              "- Poids total : ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['qualite'] ?? 0) as double)).toStringAsFixed(3)} Kg"
+                              "\n- Momant total : ${ventesDuJour.fold<double>(0, (total, vente) => total + ((vente['prix_total'] ?? 0) as double)).toStringAsFixed(2)} Ar",
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black),
                             ),
-                            IconButton(
-                              icon: Icon(Icons.picture_as_pdf),
-                              onPressed: () {
-                                generateAndSavePDF(ventesDuJour, globalState);
-                              },
-                            ),
+                            if (1 == 0)
+                              IconButton(
+                                icon: Icon(Icons.picture_as_pdf),
+                                onPressed: () {
+                                  generateAndSavePDF(
+                                      ventesDuJour, globalState, beneficeTotal);
+                                },
+                              ),
+                            Text("- Total bénéfice: $beneficeTotal Ar",
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.black))
                           ],
                         ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                      child: Divider(
+                        color: Colors.blue.shade600,
+                        height: 2,
+                        thickness: 4,
                       ),
                     ),
                     Expanded(
                       child: ListView.builder(
                         itemCount: ventesDuJour.length,
-                        padding: EdgeInsets.only(top: 20),
+                        padding: EdgeInsets.only(top: 10),
                         itemBuilder: (context, index) {
                           final vente = ventesDuJour[index];
                           // 1. Trouver le produitDetail lié à cette vente
-                          final produitDetail = globalState.produitsDetails.firstWhere(
-                                (p) => p['id_produitDetail'] == vente['id_produitDetail'],
+                          final produitDetail =
+                              globalState.produitsDetails.firstWhere(
+                            (p) =>
+                                p['id_produitDetail'] ==
+                                vente['id_produitDetail'],
                             orElse: () => {},
                           );
+                          final benefice = (produitDetail['prix_entrer'] -
+                                  produitDetail['prix_unitaire']) *
+                              vente['qualite'];
 
 // 2. Si trouvé, remonter au produit
                           Map<String, dynamic> nomProduit = {'nom': 'Inconnu'};
-                          if (produitDetail != null) {
+                          if (produitDetail.isNotEmpty) {
                             final idProduit = produitDetail['id_produit'];
                             nomProduit = globalState.produits.firstWhere(
-                                  (p) => p['id_produit'] == idProduit,
+                              (p) => p['id_produit'] == idProduit,
                               orElse: () => {'nom': 'Inconnu'},
                             );
                           }
 
 // Tu peux ensuite utiliser :
                           print("Nom : ${nomProduit['nom']}");
-                          print("Description : ${produitDetail?['description'] ?? ''}");
+                          print(
+                              "Description : ${produitDetail['description'] ?? ''}");
 
-                          final descriptionProduit = globalState.produitsDetails.firstWhere(
-                                  (produit) =>
-                              produit['id_produitDetail'] == vente['id_produitDetail']);
-                          final lanja = (vente['qualite'] * 1000).toStringAsFixed(3);
+                          final descriptionProduit = globalState.produitsDetails
+                              .firstWhere((produit) =>
+                                  produit['id_produitDetail'] ==
+                                  vente['id_produitDetail']);
+                          final lanja =
+                              (vente['qualite'] * 1000).toStringAsFixed(1);
                           final dateT = DateTime.parse(vente['date']);
-                          return Card(
-                            color: Colors.blue.shade100, // Bleu très clair
-                            margin: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            child: ListTile(
-                              title: Text(
-                                " ${nomProduit['nom']} ${descriptionProduit['description']} ",
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.teal.shade900) ,
+                          return Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.set_meal_outlined, color: Colors.blue.shade400, size: 25,
+                                   ),
+                                  Text(
+                                    " ${nomProduit['nom']} ${descriptionProduit['description']} ",
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue.shade400),
+                                  ),
+                                ],
                               ),
-                              subtitle: Text(
-                                  "📦 Lanja : ${vente['qualite'].toStringAsFixed(3)} Kg  ~${lanja} g~ \n💰 Vidiny : ${vente['prix_total']} Ar"),
-                              trailing: Text(
-                                DateFormat('HH:mm').format(dateT),
-                                style: TextStyle(color: Colors.grey),
+                              ListTile(
+                                title: Text(
+                                  "Bénéfice : $benefice Ar",
+                                  style: TextStyle(
+                                       color: Colors.teal),
+                                ),
+                                subtitle: Text(
+                                  "📦 Poids : ${vente['qualite'].toStringAsFixed(1)} Kg  ~${lanja} g~"
+                                  " \n💰 Prix : ${vente['prix_total']} Ar",
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                trailing: Text(
+                                  DateFormat('HH:mm').format(dateT),
+                                  style: TextStyle(color: Colors.black),
+                                ),
                               ),
-                            ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 18.0),
+                                child: Divider(
+                                  color: Colors.blue.shade600,
+                                  thickness: 2,
+                                ),
+                              ),
+                            ],
                           );
                         },
                       ),
@@ -199,81 +231,6 @@ class _HistoriqueState extends State<Historique> {
                   ],
                 );
               },
-            ),
-          ),
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 2.0),
-              child: Container(
-                height: 100,
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      ..._getProduitQuantities(
-                          globalState.ventes, globalState.produits, globalState.produitsDetails)
-                          .asMap()
-                          .entries
-                          .map(
-                            (entry) {
-                          int index = entry.key + 1;
-                          var produitQuantite = entry.value;
-
-                          return Card(
-                            color: Colors.teal.shade100, // Bleu clair/turquoise
-                            margin: EdgeInsets.symmetric(horizontal: 10),
-                            child: Container(
-                              width: 180,
-                              padding: EdgeInsets.all(10),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        padding:
-                                        EdgeInsets.symmetric(horizontal: 8),
-                                        decoration: BoxDecoration(
-                                          color: Colors.orange, // Jaune/orange
-                                          borderRadius:
-                                          BorderRadius.circular(100),
-                                        ),
-                                        child: Text(
-                                          "$index",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white),
-                                        ),
-                                      ),
-                                      SizedBox(width: 40),
-                                      Text(produitQuantite['nom'],
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                    ],
-                                  ),
-                                  SizedBox(height: 5),
-                                  Text(produitQuantite['description']
-                                      .toString()),
-                                  SizedBox(height: 5),
-                                  Text(
-                                    "Totaly lafo: ${produitQuantite['quantite'].toStringAsFixed(2)} Kg",
-                                    style: TextStyle(
-                                        color: Colors.teal.shade900,
-                                        fontSize: 13),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ).toList(),
-                    ],
-                  ),
-                ),
-              ),
             ),
           ),
         ],

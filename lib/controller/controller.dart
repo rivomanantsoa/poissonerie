@@ -91,6 +91,7 @@ class Controller extends ChangeNotifier {
     await loadProduitsDetails();
     await loadVentes();
     await loadTickets();
+    await loadHistoriques();
   }
 
   // Listes des données
@@ -384,7 +385,7 @@ return idt;
   }
   Future<void> loadHistoriques() async {
     historiques = await _db.query('Historique');
-    print("📌 Produits chargés : $historiques");
+    print("📌 les historiques chargés : $historiques");
     notifyListeners();
   }
 
